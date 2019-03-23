@@ -19,7 +19,6 @@ Source code drawn from a number of sources and examples, including contributions
 
 #include "Game.h"
 
-
 // Setup includes
 #include "HighResolutionTimer.h"
 #include "GameWindow.h"
@@ -46,9 +45,7 @@ Game::Game()
 	m_pShaderPrograms = NULL;
 	m_pPlanarTerrain = NULL;
 	m_pFtFont = NULL;
-	m_pBarrelMesh = NULL;
-	m_horse = NULL;
-	m_plane = NULL;
+	m_pBugShipMesh = NULL;
 	m_pSphere = NULL;
 	m_pHighResolutionTimer = NULL;
 	m_pAudio = NULL;
@@ -70,15 +67,13 @@ Game::~Game()
 	delete m_pSkybox;
 	delete m_pPlanarTerrain;
 	delete m_pFtFont;
-	delete m_pBarrelMesh;
-	delete m_horse;
-	delete m_plane;
+	delete m_pBugShipMesh;
 	delete m_pSphere;
 	delete m_pAudio;
 	delete m_catmull;
 	delete m_pCube;
-	delete m_coin;
-	delete m_pTetra;
+	delete m_pSkullMesh;
+	delete m_pGemTetra;
 	delete m_phero;
 	delete m_pcamera;
 
@@ -104,15 +99,13 @@ void Game::Initialise()
 	m_pShaderPrograms = new vector <CShaderProgram *>;
 	m_pPlanarTerrain = new CPlane;
 	m_pFtFont = new CFreeTypeFont;
-	m_pBarrelMesh = new COpenAssetImportMesh;
-	m_horse = new COpenAssetImportMesh;
-	m_plane = new COpenAssetImportMesh;
+	m_pBugShipMesh = new COpenAssetImportMesh;
 	m_pSphere = new CSphere;
 	m_pAudio = new CAudio;
 	m_catmull = new CCatmullRom(trackWidth);
 	m_pCube = new CCube;
-	m_coin = new COpenAssetImportMesh;
-	m_pTetra = new CTetra;
+	m_pSkullMesh = new COpenAssetImportMesh;
+	m_pGemTetra = new CTetra;
 	m_phero = new Hero;
 	m_pcamera = new CCamera;
 
@@ -191,8 +184,8 @@ void Game::Initialise()
 	// Cube creation
 	m_pCube->Create("resources\\textures\\box.jpg");
 
-	// Tetra creation
-	m_pTetra->Create("resources\\textures\\dirtpile01.jpg");
+	// Gem creation
+	m_pGemTetra->Create("resources\\textures\\redCrystal.jpg");
 
 	// Create the planar terrain
 	m_pPlanarTerrain->Create("resources\\textures\\", "Tile41a.jpg", 2000.0f, 2000.0f, 50.0f); // Texture downloaded from http://www.psionicgames.com/?page_id=26 on 24 Jan 2013
@@ -201,13 +194,11 @@ void Game::Initialise()
 	m_pFtFont->SetShaderProgram(pFontProgram);
 
 	// Load some meshes in OBJ format
-	m_pBarrelMesh->Load("resources\\models\\Barrel\\Barrel02.obj");  // Downloaded from http://www.psionicgames.com/?page_id=24 on 24 Jan 2013
-	m_horse->Load("resources\\models\\Blue_Ship_3d_OBJ\\Blue_Ship_3d.obj");  // Downloaded from http://opengameart.org/content/horse-lowpoly on 24 Jan 2013
-	m_plane->Load("resources\\models\\orbiter bugship\\orbiter bugship.obj"); // Downloaded from turbosquid
-	m_coin->Load("resources\\models\\Crystal\\3d-model.obj");
+	m_pBugShipMesh->Load("resources\\models\\orbiter bugship\\orbiter bugship.obj"); // Downloaded from turbosquid
+	m_pSkullMesh->Load("resources\\models\\Skull Low Poly\\Skull Low Poly.obj");
 
 	// Create a sphere
-	m_pSphere->Create("resources\\textures\\", "dirtpile01.jpg", 25, 25);  // Texture downloaded from http://www.psionicgames.com/?page_id=26 on 24 Jan 2013
+	m_pSphere->Create("resources\\textures\\", "fireball.jpg", 25, 25);  // Texture downloaded from http://www.psionicgames.com/?page_id=26 on 24 Jan 2013
 	glEnable(GL_CULL_FACE);
 
 	// Initialise audio and play background music
@@ -403,16 +394,12 @@ void Game::Render()
 		modelViewMatrixStack.Scale(3.f);
 		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 		pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-		// To turn off texture mapping and use the sphere colour only (currently white material), uncomment the next line
-		//pMainProgram->SetUniform("bUseTexture", false);
-		// m_coin->Render();
 		m_pCube->Render();
 		modelViewMatrixStack.Pop();
 
 	}
 
 	// Tetrahedron
-
 	size = gemPositions.size();
 	for (int i = 0; i < size; i++)
 	{
@@ -423,8 +410,7 @@ void Game::Render()
 		modelViewMatrixStack.Scale(3.f);
 		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 		pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-		
-		m_pTetra->Render();
+		m_pGemTetra->Render();
 		modelViewMatrixStack.Pop();
 	}
 
@@ -438,14 +424,31 @@ void Game::Render()
 		modelViewMatrixStack.Scale(0.03f);
 		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 		pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-		m_plane->Render();
+		m_pBugShipMesh->Render();
 	modelViewMatrixStack.Pop();
+
+	vector<FireBall*> shotsAliveList = m_phero->getShotsAliveList();
+	if (shotsAliveList.size() != 0)
+	{
+		for (vector<FireBall*>::iterator it = shotsAliveList.begin(); it != shotsAliveList.end();)
+		{
+			modelViewMatrixStack.Push();
+			modelViewMatrixStack.Translate((*it)->_position._point);
+			modelViewMatrixStack *= (*it)->_position.getOrientation();
+			modelViewMatrixStack.Scale(3.f);
+			pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+			pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+			m_pSphere->Render();
+			modelViewMatrixStack.Pop();
+
+			++it;
+		}
+
+	}
 
 	RenderWater();
 
-
 	// Draw the 2D graphics after the 3D graphics
-	DisplayFrameRate();
 	DisplayHUD();
 
 	// Swap buffers to show the rendered image
@@ -470,18 +473,41 @@ void Game::CheckForCollisions()
 {
 	glm::vec3 heroPoint = m_phero->position._point;
 
+	// Crate Collisions
 	for (vector<Position>::iterator it = cratePositions.begin(); it != cratePositions.end();)
 	{
+		bool crateDestroyed = false;
+
+		// Check for collision with hero
 		if (glm::distance((*it)._point, heroPoint) < 5.f)
 		{
-			m_phero->OnCrateDestroy();
+			m_phero->OnTakeDamage(crateDamageValue);
 			it = cratePositions.erase(it);
+			crateDestroyed = true;
 		}
 		else {
-			++it;
+			// Check for collision with each fireball alive
+			vector<FireBall*> shotsAliveList = m_phero->getShotsAliveList();
+			if (shotsAliveList.size() != 0)
+			{
+				for (vector<FireBall*>::iterator ft = shotsAliveList.begin(); ft != shotsAliveList.end();)
+				{
+					if (glm::distance((*ft)->_position._point, (*it)._point) < 8.f)
+					{
+						m_phero->OnCrateDestroy();
+						it = cratePositions.erase(it);
+						crateDestroyed = true;
+						break;
+					}
+					++ft;
+				}
+			}
+			if(!crateDestroyed)
+				++it;
 		}
 	}
 
+	// Gem collisions
 	for (vector<Position>::iterator it = gemPositions.begin(); it != gemPositions.end();)
 	{
 		if (glm::distance((*it)._point, heroPoint) < 5.f)
@@ -494,39 +520,6 @@ void Game::CheckForCollisions()
 		}
 	}
 
-}
-
-void Game::DisplayFrameRate()
-{
-	CShaderProgram *fontProgram = (*m_pShaderPrograms)[1];
-
-	RECT dimensions = m_gameWindow.GetDimensions();
-	int height = dimensions.bottom - dimensions.top;
-
-	// Increase the elapsed time and frame counter
-	m_elapsedTime += deltaTime;
-	m_frameCount++;
-
-	// Now we want to subtract the current time by the last time that was stored
-	// to see if the time elapsed has been over a second, which means we found our FPS.
-	if (m_elapsedTime > 1000)
-    {
-		m_elapsedTime = 0;
-		m_framesPerSecond = m_frameCount;
-
-		// Reset the frames per second
-		m_frameCount = 0;
-    }
-
-	if (m_framesPerSecond > 0) {
-		// Use the font shader program and render the text
-		fontProgram->UseProgram();
-		glDisable(GL_DEPTH_TEST);
-		fontProgram->SetUniform("matrices.modelViewMatrix", glm::mat4(1));
-		fontProgram->SetUniform("matrices.projMatrix", m_pcamera->GetOrthographicProjectionMatrix());
-		fontProgram->SetUniform("vColour", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-		m_pFtFont->Render(20, height - 20, 20, "FPS: %d", m_framesPerSecond);
-	}
 }
 
 void Game::DisplayHUD()
@@ -544,7 +537,47 @@ void Game::DisplayHUD()
 	fontProgram->SetUniform("matrices.projMatrix", m_pcamera->GetOrthographicProjectionMatrix());
 	fontProgram->SetUniform("vColour", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	m_pFtFont->Render(20, 20, 20, "Crates Destroyed: %d", m_phero->cratesDestroyed);
+	m_pFtFont->Render(20, 40, 20, "Fireball Stack: %d", m_phero->currentShotsRemaining);
 
+	m_pFtFont->Render(20, 60, 20, "HEALHT: %d", m_phero->currentHealth);
+
+
+
+	// Frame rate
+	DisplayFrameRate();
+}
+
+void Game::DisplayFrameRate()
+{
+	CShaderProgram *fontProgram = (*m_pShaderPrograms)[1];
+
+	RECT dimensions = m_gameWindow.GetDimensions();
+	int height = dimensions.bottom - dimensions.top;
+
+	// Increase the elapsed time and frame counter
+	m_elapsedTime += deltaTime;
+	m_frameCount++;
+
+	// Now we want to subtract the current time by the last time that was stored
+	// to see if the time elapsed has been over a second, which means we found our FPS.
+	if (m_elapsedTime > 1000)
+	{
+		m_elapsedTime = 0;
+		m_framesPerSecond = m_frameCount;
+
+		// Reset the frames per second
+		m_frameCount = 0;
+	}
+
+	if (m_framesPerSecond > 0) {
+		// Use the font shader program and render the text
+		fontProgram->UseProgram();
+		glDisable(GL_DEPTH_TEST);
+		fontProgram->SetUniform("matrices.modelViewMatrix", glm::mat4(1));
+		fontProgram->SetUniform("matrices.projMatrix", m_pcamera->GetOrthographicProjectionMatrix());
+		fontProgram->SetUniform("vColour", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+		m_pFtFont->Render(20, height - 20, 20, "FPS: %d", m_framesPerSecond);
+	}
 }
 
 void Game::RenderWater()
@@ -554,7 +587,7 @@ void Game::RenderWater()
 	modelViewMatrixStack.SetIdentity();
 
 
-	CShaderProgram *circularWaterProgram = (*m_pShaderPrograms)[2];
+	CShaderProgram *circularWaterProgram = (*m_pShaderPrograms)[0];
 
 	circularWaterProgram->UseProgram();
 
@@ -592,14 +625,11 @@ void Game::RenderWater()
 
 	// Spline Render
 	modelViewMatrixStack.Push();
-		// pMainProgram->SetUniform("bUseTexture", false);
-		// turn off texturing
 		circularWaterProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 		circularWaterProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
 		m_catmull->RenderCentreline();
-		// m_catmull->RenderOffsetCurves();
+		m_catmull->RenderOffsetCurves();
 		m_catmull->RenderTrack();
-		// pMainProgram->SetUniform("bUseTexture", true);
 	modelViewMatrixStack.Pop();
 
 

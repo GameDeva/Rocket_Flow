@@ -35,14 +35,12 @@ private:
 	// Pointers to game objects.  They will get allocated in Game::Initialise()
 	CSkybox *m_pSkybox;
 	CCube *m_pCube;
-	CTetra * m_pTetra;
+	CTetra * m_pGemTetra;
 	vector <CShaderProgram *> *m_pShaderPrograms;
 	CPlane *m_pPlanarTerrain;
 	CFreeTypeFont *m_pFtFont;
-	COpenAssetImportMesh *m_pBarrelMesh;
-	COpenAssetImportMesh *m_horse;
-	COpenAssetImportMesh *m_plane;
-	COpenAssetImportMesh *m_coin;
+	COpenAssetImportMesh *m_pBugShipMesh;
+	COpenAssetImportMesh *m_pSkullMesh;
 	CSphere *m_pSphere;
 	CHighResolutionTimer *m_pHighResolutionTimer;
 	CAudio *m_pAudio;
@@ -86,6 +84,8 @@ private:
 	const float trackWidth = 40.f;
 	const int trackSampleSize = 300;
 
+	const int crateDamageValue = 10;
+	const int skullDamageValue = 20;
 	
 	vector<Position> cratePositions;
 	vector<Position> gemPositions;

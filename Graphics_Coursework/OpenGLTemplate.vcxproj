@@ -120,6 +120,7 @@
     <ClInclude Include="Common.h" />
     <ClInclude Include="CTetra.h" />
     <ClInclude Include="Cubemap.h" />
+    <ClInclude Include="FireBall.h" />
     <ClInclude Include="FreeTypeFont.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameWindow.h" />

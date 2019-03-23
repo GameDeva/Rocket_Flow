@@ -1,34 +1,18 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(391,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (OpenGLTemplate.vcxproj).  This can lead to incorrect clean and rebuild behavior.
   CCatmullRom.cpp
 c:\opengl projects\graphics_coursework\graphics_coursework\ccatmullrom.cpp(484): warning C4018: '<': signed/unsigned mismatch
-  CCube.cpp
-  CDisc.cpp
-  CTetra.cpp
-  Camera.cpp
-  Cubemap.cpp
-  FreeTypeFont.cpp
   Game.cpp
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(227): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(238): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(248): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(259): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(274): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(285): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(296): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(307): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(463): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(464): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-  GameWindow.cpp
-  Hero.cpp
-c:\opengl projects\graphics_coursework\graphics_coursework\hero.cpp(82): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\hero.cpp(89): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-  OpenAssetImportMesh.cpp
-  Plane.cpp
-  Shaders.cpp
-  Skybox.cpp
-  Sphere.cpp
-  Texture.cpp
-  VertexBufferObject.cpp
-  VertexBufferObjectIndexed.cpp
+c:\opengl projects\graphics_coursework\graphics_coursework\fireball.h(24): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\fireball.h(25): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(218): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(229): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(239): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(250): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(265): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(276): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(287): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(298): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(466): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(467): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
   Generating Code...
   OpenGLTemplate.vcxproj -> C:\OpenGl Projects\Graphics_Coursework\Debug\Graphics_Coursework.exe

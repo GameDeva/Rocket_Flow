@@ -485,6 +485,7 @@ void CCatmullRom::RenderTrack()
 	{
 		glDrawArrays(GL_TRIANGLE_STRIP, i, curveSampleSize);
 	}
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 int CCatmullRom::CurrentLap(float d)
@@ -536,7 +537,7 @@ void CCatmullRom::UpdatePositionToEdge(glm::vec3 newPoint, Position &position)
 }
 
 
-void CCatmullRom::SuperTNBMaker(Position &position, float samplePoint, float angle, float m_t)
+void CCatmullRom::SuperTNBMaker(Position &position, float angle, float m_t)
 {
 	if (!flipMode)
 	{

@@ -3,6 +3,14 @@
 
 Hero::Hero()
 {
+	// shotsFired = vector<Position>();
+	shotsAlive = vector<FireBall*>();
+	shotsInDiscard = vector<FireBall*>();
+
+	// Gameplay variables
+	cratesDestroyed = 0;
+	currentHealth = maxHealth;
+	currentShotsRemaining = maxNumberOfShots;
 }
 
 
@@ -13,10 +21,6 @@ Hero::~Hero()
 // Initialise hero object
 void Hero::Initialise()
 {
-	// Gameplay variables
-	cratesDestroyed = 0;
-
-
 
 
 }
@@ -26,8 +30,11 @@ void Hero::Update(float deltaTime, float m_t, CCatmullRom &catmul)
 	// Update player movement
 	CalculateMovement(deltaTime);
 
+	// Update Shots
+	UpdateShots(deltaTime, m_t, catmul);
+
 	// Hero
-	catmul.SuperTNBMaker(position, m_t, rotationAngle, m_t);
+	catmul.SuperTNBMaker(position, rotationAngle, m_t);
 	sideMovement = 0.f;
 
 }
@@ -91,6 +98,59 @@ void Hero::CalculateMovement(float deltaTime)
 
 }
 
+void Hero::UpdateShots(float deltaTime, float m_t, CCatmullRom &catmul)
+{
+	currentShotTimer += (float)deltaTime * 0.001;
+	if ((GetKeyState(VK_SPACE) & 0x80) && currentShotTimer > timeBetweenShots && currentShotsRemaining > 0) {
+		// Add new shot position
+		Position p = position;
+		p._point += p._T * 2.f;
+		shotsAlive.push_back(new FireBall(m_t, rotationAngle, p));
+		currentShotsRemaining--;
+		// Reset shot timer
+		currentShotTimer = 0.f;
+	}
+
+	// Alive shots
+	for (int i = 0; i < shotsAlive.size();)
+	{
+		if (shotsAlive[i]->Alivetimer >= shotTimeBeforeDecay)
+		{
+			// Add to vectorlist of discarding shots
+			shotsInDiscard.push_back(shotsAlive[i]);
+
+			// Erase from the alive Shots
+			shotsAlive.erase(shotsAlive.begin() + i);
+		} 
+		else
+		{
+			shotsAlive[i]->Update(deltaTime, catmul);
+			++i;
+		}
+	}
+
+	// Discarding shots
+	for (int i = 0; i < shotsInDiscard.size();)
+	{
+		// If time is greater than discard time, then erase it from 
+		if (shotsInDiscard[i]->Alivetimer >= shotTimeForDiscardEffect)
+		{
+			delete (shotsInDiscard[i]);
+			// Erase from the alive Shots
+			shotsInDiscard.erase(shotsInDiscard.begin() + i);
+
+		}
+		else 
+		{
+			shotsInDiscard[i]->Update(deltaTime, catmul);
+			++i;
+		}
+	}
+
+	
+
+}
+
 void Hero::OnCrateDestroy()
 {
 	cratesDestroyed++;
@@ -100,4 +160,9 @@ void Hero::OnGemCollect()
 {
 
 
+}
+
+void Hero::OnTakeDamage(int damageValue)
+{
+	currentHealth -= damageValue;
 }

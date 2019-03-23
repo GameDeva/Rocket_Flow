@@ -127,12 +127,12 @@ void main()
 
 		if (bUseTexture)
 		{
-			vColour = BlinnPhongModel(vEyePosition, normalize(vEyeNorm));
+			vColour = BlinnPhongSpotlightModel(vEyePosition, normalize(vEyeNorm));
 			vOutputColour = vTexColour*vec4(vColour, 1.0f);	// Combine object colour and texture 
 		}
 		else
 		{
-			vColour = BlinnPhongModel(vEyePosition, normalize(vEyeNorm));
+			vColour = BlinnPhongSpotlightModel(vEyePosition, normalize(vEyeNorm));
 			vOutputColour = vec4(vColour, 1.0f);	// Just use the colour instead
 		}
 	}

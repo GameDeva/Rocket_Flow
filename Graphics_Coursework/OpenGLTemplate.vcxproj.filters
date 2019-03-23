@@ -117,6 +117,7 @@
     <ClInclude Include="Hero.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="CDisc.h" />
+    <ClInclude Include="FireBall.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">

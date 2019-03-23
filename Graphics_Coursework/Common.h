@@ -4,6 +4,7 @@
 #include <cstring>
 #include <vector>
 #include <sstream>
+#include <map>
 
 #include "./include/glm/gtc/type_ptr.hpp"
 #include "./include/glm/gtc/matrix_transform.hpp"
