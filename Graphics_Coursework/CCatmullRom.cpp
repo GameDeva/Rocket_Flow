@@ -537,17 +537,17 @@ void CCatmullRom::UpdatePositionToEdge(glm::vec3 newPoint, Position &position)
 }
 
 
-void CCatmullRom::SuperTNBMaker(Position &position, float angle, float m_t)
+void CCatmullRom::SuperTNBMaker(Position &position, float angle, float radius, float m_t)
 {
 	if (!flipMode)
 	{
 		TNBAtSamplePoint(m_t, position);
-		glm::vec3 newPoint = positionAtAngle(position, angle, trackWidth / 2);
+		glm::vec3 newPoint = positionAtAngle(position, angle, radius);
 		UpdatePositionToEdge(newPoint, position);
 	}
 	else {
 		TNBAtSamplePoint(m_t, position);
-		glm::vec3 newPoint = positionAtAngle(position, angle, trackWidth / 3);
+		glm::vec3 newPoint = positionAtAngle(position, angle, radius);
 		UpdatePositionToEdge(newPoint, position);
 	}
 

@@ -213,7 +213,7 @@ void Game::Initialise()
 	int incrementer = 1000;
 	for (int j = 0; j < 50; j++) {
 		gemPositions.push_back(Position());
-		// SuperTNBMaker(cratePositions[j], i, 0.f);
+		// SuperTNBMaker(gemPositions[j], j, 0.f);
 
 		m_catmull->TNBAtSamplePoint(i, gemPositions[j]);
 		glm::vec3 newPoint = m_catmull->positionAtAngle(gemPositions[j], 0.f + (pi / 4.f), (trackWidth / 2) + 3);
@@ -302,6 +302,7 @@ void Game::Initialise()
 		i += incrementer;
 	}
 
+	m_phero->Initialise();
 
 }
 
@@ -415,7 +416,15 @@ void Game::Render()
 	}
 
 	//  The space ship
-	modelViewMatrixStack.Push();
+	if (m_phero->shouldRender)
+	{
+		if (m_phero->discard.shouldDiscard)
+		{
+			pMainProgram->SetUniform("applyDiscard", true);
+			pMainProgram->SetUniform("discardValue", m_phero->discard._isReverse ? 1.f - m_phero->discard.currentTime : m_phero->discard.currentTime);
+		}
+
+		modelViewMatrixStack.Push();
 		modelViewMatrixStack.Translate(m_phero->position._point);
 		modelViewMatrixStack *= m_phero->position.getOrientation();
 		// modelViewMatrixStack.Rotate(glm::vec3(0, 1, 0), 180.f);
@@ -425,7 +434,10 @@ void Game::Render()
 		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 		pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
 		m_pBugShipMesh->Render();
-	modelViewMatrixStack.Pop();
+		modelViewMatrixStack.Pop();
+
+		pMainProgram->SetUniform("applyDiscard", false);
+	}
 
 	vector<FireBall*> shotsAliveList = m_phero->getShotsAliveList();
 	if (shotsAliveList.size() != 0)
@@ -443,8 +455,38 @@ void Game::Render()
 
 			++it;
 		}
+	}
+
+	vector<FireBall*> shotsDiscardList = m_phero->getShotsInDiscard();
+	if (shotsDiscardList.size() != 0)
+	{
+		pMainProgram->SetUniform("applyDiscard", true);
+
+		for (vector<FireBall*>::iterator it = shotsDiscardList.begin(); it != shotsDiscardList.end();)
+		{
+			// Do not render discard shots that have completed discarding
+			if (!(*it)->discard.shouldDiscard) {
+				++it;
+				continue;
+			}
+
+			pMainProgram->SetUniform("discardValue", (*it)->discard._isReverse ? 1.f - (*it)->discard.currentTime : (*it)->discard.currentTime);
+
+			modelViewMatrixStack.Push();
+			modelViewMatrixStack.Translate((*it)->_position._point);
+			modelViewMatrixStack *= (*it)->_position.getOrientation();
+			modelViewMatrixStack.Scale(3.f);
+			pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+			pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+			m_pSphere->Render();
+			modelViewMatrixStack.Pop();
+
+			++it;
+		}
+		pMainProgram->SetUniform("applyDiscard", false);
 
 	}
+
 
 	RenderWater();
 
@@ -459,8 +501,8 @@ void Game::Render()
 // Update method runs repeatedly with the Render method
 void Game::Update() 
 {
-
-	m_t += 0.1f* (float)deltaTime; 
+	// Increase sample rate 
+	m_t += m_phero->moveSpeed * 0.001f* (float)deltaTime; 
 
 	// Check if pass in of catmul is ok
 	m_phero->Update(deltaTime, m_t, *m_catmull);

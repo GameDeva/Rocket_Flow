@@ -21,6 +21,7 @@ class CCube;
 class CTetra;
 class Hero;
 struct Position;
+struct Discard;
 
 class Game {
 private:

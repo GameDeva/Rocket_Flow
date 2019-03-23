@@ -1,9 +1,7 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(391,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (OpenGLTemplate.vcxproj).  This can lead to incorrect clean and rebuild behavior.
-  CCatmullRom.cpp
-c:\opengl projects\graphics_coursework\graphics_coursework\ccatmullrom.cpp(484): warning C4018: '<': signed/unsigned mismatch
   Game.cpp
-c:\opengl projects\graphics_coursework\graphics_coursework\fireball.h(24): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\fireball.h(25): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\fireball.h(26): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\fireball.h(27): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
 c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(218): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
 c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(229): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
 c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(239): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
@@ -12,7 +10,16 @@ c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(265): warnin
 c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(276): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
 c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(287): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
 c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(298): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(466): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(467): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(508): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(509): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  Hero.cpp
+c:\opengl projects\graphics_coursework\graphics_coursework\fireball.h(26): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\fireball.h(27): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\hero.cpp(63): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\hero.cpp(120): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\hero.cpp(127): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\hero.cpp(134): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\hero.cpp(146): warning C4018: '<': signed/unsigned mismatch
+c:\opengl projects\graphics_coursework\graphics_coursework\hero.cpp(167): warning C4018: '<': signed/unsigned mismatch
   Generating Code...
   OpenGLTemplate.vcxproj -> C:\OpenGl Projects\Graphics_Coursework\Debug\Graphics_Coursework.exe

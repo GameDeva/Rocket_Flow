@@ -38,6 +38,8 @@ uniform sampler2D sampler0;  // The texture sampler
 uniform samplerCube CubeMapTex;
 uniform bool bUseTexture;    // A flag indicating if texture-mapping should be applied
 uniform bool renderSkybox;
+uniform bool applyDiscard;
+uniform float discardValue;
 in vec3 worldPosition;
 
 
@@ -125,15 +127,22 @@ void main()
 		// Get the texel colour from the texture sampler
 		vec4 vTexColour = texture(sampler0, vTexCoord);	
 
-		if (bUseTexture)
-		{
-			vColour = BlinnPhongModel(vEyePosition, normalize(vEyeNorm));
-			vOutputColour = vTexColour*vec4(vColour, 1.0f);	// Combine object colour and texture 
+		// Check should discard fragment
+		if(applyDiscard && vTexColour.r < discardValue) {
+			discard;
 		}
-		else
+		else 
 		{
-			vColour = BlinnPhongModel(vEyePosition, normalize(vEyeNorm));
-			vOutputColour = vec4(vColour, 1.0f);	// Just use the colour instead
+			if (bUseTexture)
+			{
+				vColour = BlinnPhongModel(vEyePosition, normalize(vEyeNorm));
+				vOutputColour = vTexColour*vec4(vColour, 1.0f);	// Combine object colour and texture 
+			}
+			else
+			{
+				vColour = BlinnPhongModel(vEyePosition, normalize(vEyeNorm));
+				vOutputColour = vec4(vColour, 1.0f);	// Just use the colour instead
+			}
 		}
 	}
 	

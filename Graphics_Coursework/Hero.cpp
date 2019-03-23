@@ -3,14 +3,22 @@
 
 Hero::Hero()
 {
+	discard = Discard(2.f, true);
+	discard.Start();
+
 	// shotsFired = vector<Position>();
 	shotsAlive = vector<FireBall*>();
 	shotsInDiscard = vector<FireBall*>();
+
+	shouldRender = true;
 
 	// Gameplay variables
 	cratesDestroyed = 0;
 	currentHealth = maxHealth;
 	currentShotsRemaining = maxNumberOfShots;
+	invulnerable = false;
+	currentInvulnerabilityTimer = 0.f;
+
 }
 
 
@@ -21,21 +29,44 @@ Hero::~Hero()
 // Initialise hero object
 void Hero::Initialise()
 {
-
-
+	cameraSetting = Third;
 }
 
 void Hero::Update(float deltaTime, float m_t, CCatmullRom &catmul)
 {
+	// Discard into appearance
+	discard.update(deltaTime);
+	if (GetKeyState(VK_UP) & 0x80)
+	{
+		discard.Start();
+	}
+
 	// Update player movement
 	CalculateMovement(deltaTime);
 
+	// Placement
+	catmul.SuperTNBMaker(position, rotationAngle, radialDistance, m_t);
+	sideMovement = 0.f;
+
+	// Invulnerbility
+	if (invulnerable)
+	{
+		if (currentInvulnerabilityTimer >= invulnerabilityMaxTime)
+		{
+			// Reset values
+			currentInvulnerabilityTimer = 0.f;
+			invulnerable = false;
+			shouldRender = true;
+		}
+		else
+		{
+			currentInvulnerabilityTimer += (float)deltaTime * 0.001;
+			glm::sin((currentInvulnerabilityTimer / flashPeriod) * pi) > 0.f ? shouldRender = true : shouldRender = false;
+		}
+	}
+		
 	// Update Shots
 	UpdateShots(deltaTime, m_t, catmul);
-
-	// Hero
-	catmul.SuperTNBMaker(position, rotationAngle, m_t);
-	sideMovement = 0.f;
 
 }
 
@@ -116,6 +147,9 @@ void Hero::UpdateShots(float deltaTime, float m_t, CCatmullRom &catmul)
 	{
 		if (shotsAlive[i]->Alivetimer >= shotTimeBeforeDecay)
 		{
+			// Begin Discard 
+			shotsAlive[i]->discard.Start();
+
 			// Add to vectorlist of discarding shots
 			shotsInDiscard.push_back(shotsAlive[i]);
 
@@ -133,7 +167,7 @@ void Hero::UpdateShots(float deltaTime, float m_t, CCatmullRom &catmul)
 	for (int i = 0; i < shotsInDiscard.size();)
 	{
 		// If time is greater than discard time, then erase it from 
-		if (shotsInDiscard[i]->Alivetimer >= shotTimeForDiscardEffect)
+		if (!shotsInDiscard[i]->discard.shouldDiscard) // shotsInDiscard[i]->Alivetimer >= shotTimeForDiscardEffect
 		{
 			delete (shotsInDiscard[i]);
 			// Erase from the alive Shots
@@ -164,5 +198,10 @@ void Hero::OnGemCollect()
 
 void Hero::OnTakeDamage(int damageValue)
 {
-	currentHealth -= damageValue;
+	// Take damage if not invulnerable
+	if (!invulnerable)
+	{
+		currentHealth -= damageValue;
+		invulnerable = true;
+	}
 }

@@ -26,7 +26,7 @@ public:
 
 	bool Sample(float d, glm::vec3 &p, glm::vec3 &up = glm::vec3(0, 0, 0)); // Return a point on the centreline based on a certain distance along the control curve.
 
-	void SuperTNBMaker(Position &position, float angle, float m_t);
+	void SuperTNBMaker(Position &position, float angle, float radius, float m_t);
 
 	void TNBAtSamplePoint(float samplePoint, Position &position);
 	glm::vec3 positionAtAngle(Position &position, float angleInRad, float radius);

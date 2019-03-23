@@ -30,8 +30,12 @@ public:
 	void OnCrateDestroy();
 	void OnGemCollect();
 
+	const float moveSpeed = 150.f;
+
 	const int maxHealth = 100;
 	int currentHealth;
+
+	bool shouldRender;
 
 	const int maxNumberOfShots = 30;
 	int currentShotsRemaining;
@@ -39,6 +43,7 @@ public:
 	// Camera Related
 	CameraSetting cameraSetting;
 	
+	Discard discard;
 	Position position;
 	int cratesDestroyed;
 
@@ -53,6 +58,7 @@ private:
 
 	// Movement related
 	//
+	const float radialDistance = 25.f;
 	float rotationAngle = 0.f;
 	float rotationSpeed = 0.05f;
 
@@ -68,12 +74,17 @@ private:
 	vector<FireBall *> shotsAlive;
 	vector<FireBall *> shotsInDiscard;
 
-	float shotTimeBeforeDecay = 3.f;
-	float shotTimeForDiscardEffect = 3.5f; // Includes timebeforedecay
+	float shotTimeBeforeDecay = 1.f;
+	float shotTimeForDiscardEffect = 1.5f; // Includes timebeforedecay
 
 	float currentShotTimer = 0.f;
 	float timeBetweenShots = 0.2f; // Time between key presses to shoot
 	//
+
+	bool invulnerable;
+	const float invulnerabilityMaxTime = 2.f;
+	float currentInvulnerabilityTimer;
+	const float flashPeriod = 0.2f;
 
 	void CalculateMovement(float deltaTime);
 	void UpdateShots(float deltaTime, float m_t, CCatmullRom &catmul);

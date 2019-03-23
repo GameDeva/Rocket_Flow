@@ -8,11 +8,13 @@ class FireBall
 {
 private:
 	const float moveSpeed = 2.f;
+	const float curveTime = 0.2f;
 
 public:
-	FireBall(float startTime, float rotationAngle, Position position) : sampleTime(startTime), _rotationAngle(rotationAngle), _position(position) { Alivetimer = 0.f; }
+	FireBall(float startTime, float rotationAngle, Position position) : sampleTime(startTime), _rotationAngle(rotationAngle), _position(position) { Alivetimer = 0.f; discard = Discard(3.f, false); }
 	~FireBall() {}
 
+	Discard discard;
 	Position _position;
 	float _rotationAngle;
 	float sampleTime;
@@ -24,18 +26,16 @@ public:
 		sampleTime += (float)deltaTime * 0.1 * moveSpeed;
 		Alivetimer += (float)deltaTime * 0.001;
 
-		_position._point += _position._T * (float)deltaTime * 0.1f * moveSpeed;
-
-		// catmul.SuperTNBMaker(_position, _rotationAngle, sampleTime);
+		// Curves along track for a given time then flys off in tangent
+		if (Alivetimer < curveTime)
+		{
+			catmul.SuperTNBMaker(_position, _rotationAngle, 25.f, sampleTime);
+		}
+		else {
+			_position._point += _position._T * (float)deltaTime * 0.1f * moveSpeed;
+		}
+	
+		discard.update(deltaTime);
 	}
 
 };
-
-//void FireBall::Update(float deltaTime, CCatmullRom &catmul)
-//{
-//	sampleTime += (float)deltaTime * 0.001 * moveSpeed;
-//	Alivetimer += (float)deltaTime * 0.001;
-//
-//	catmul.SuperTNBMaker(position, _rotationAngle, sampleTime);
-//
-//}
