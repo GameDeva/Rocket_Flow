@@ -49,6 +49,12 @@ public:
 
 	const vector<FireBall*> & getShotsAliveList() { return shotsAlive; }
 	const vector<FireBall*> & getShotsInDiscard() { return shotsInDiscard; }
+	const vector<LightInfo*> & getspotLights() { return spotLights; }
+
+	// IMPORTANT: when changing this, change size of array in mainShader.frag, since array cannot be dynamic
+	const int spotLightCount = 8;
+
+	LightInfo *dayLight;
 
 private:
 
@@ -69,6 +75,7 @@ private:
 
 	float maxSideMoveSpeed = 2.f;
 
+	vector<LightInfo*> spotLights;
 
 	// Shots related
 	vector<FireBall *> shotsAlive;
@@ -88,5 +95,9 @@ private:
 
 	void CalculateMovement(float deltaTime);
 	void UpdateShots(float deltaTime, float m_t, CCatmullRom &catmul);
+
+	const float distanceBetweenSpotLights = 40.f;
+	void InitialiseSpotLights();
+	void UpdateSpotLights();
 };
 

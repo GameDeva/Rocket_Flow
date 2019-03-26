@@ -3,6 +3,11 @@
 
 Hero::Hero()
 {
+	spotLights = vector<LightInfo*>();
+	InitialiseSpotLights();
+
+	dayLight = new LightInfo(glm::vec4(-100, 100, -100, 1), glm::vec3(1), glm::vec3(1), glm::vec3(1), glm::vec3(0.f, -1.f, 0.f), 1.f, 15.f);
+
 	discard = Discard(2.f, true);
 	discard.Start();
 
@@ -24,6 +29,31 @@ Hero::Hero()
 
 Hero::~Hero()
 {
+	if (shotsAlive.size() != 0)
+	{
+		for (int i = 0; i < shotsAlive.size(); i++)
+		{
+			delete shotsAlive[i];
+		}
+	}
+
+	if (shotsInDiscard.size() != 0)
+	{
+		for (int i = 0; i < shotsInDiscard.size(); i++)
+		{
+			delete shotsInDiscard[i];
+		}
+	}
+
+	if (spotLights.size() != 0)
+	{
+		for (int i = 0; i < spotLights.size(); i++)
+		{
+			delete spotLights[i];
+		}
+	}
+
+	delete dayLight;
 }
 
 // Initialise hero object
@@ -64,7 +94,9 @@ void Hero::Update(float deltaTime, float m_t, CCatmullRom &catmul)
 			glm::sin((currentInvulnerabilityTimer / flashPeriod) * pi) > 0.f ? shouldRender = true : shouldRender = false;
 		}
 	}
-		
+	
+	UpdateSpotLights();
+
 	// Update Shots
 	UpdateShots(deltaTime, m_t, catmul);
 
@@ -181,8 +213,30 @@ void Hero::UpdateShots(float deltaTime, float m_t, CCatmullRom &catmul)
 		}
 	}
 
-	
+}
 
+// Initialise Spotlights to arbitary position 
+void Hero::InitialiseSpotLights()
+{
+	for (int i = 0; i < spotLightCount; i++)
+	{
+		spotLights.push_back(new LightInfo(glm::vec4(1), glm::vec3(0.9f, 0.9f, 0.9f), glm::vec3(0.f, 1.f, 0.f), glm::vec3(1.f, 0.f, 0.f), glm::vec3(0, -1, 0), 1.f, 10.f));
+	}
+}
+
+// Update spotlights based on player position
+void Hero::UpdateSpotLights()
+{
+	float j = 0;
+	for (int i = 0; i < spotLights.size(); i++)
+	{
+		glm::vec3 pos = position._point - position._B * 100.f + position._T * j;
+
+		spotLights[i]->_position = glm::vec4(pos, 1);
+		spotLights[i]->_direction = (position._point + position._T * j) - pos;
+
+		j += distanceBetweenSpotLights;
+	}
 }
 
 void Hero::OnCrateDestroy()

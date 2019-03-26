@@ -55,4 +55,31 @@ struct Discard {
 };
 
 
+struct LightInfo
+{
+	glm::vec4 _position;
+	glm::vec3 _lightAmb;
+	glm::vec3 _lightDiff;
+	glm::vec3 _lightSpec;
+	glm::vec3 _direction;
+	float _exponent;
+	float _cutoff;
+
+	LightInfo(glm::vec4 position, glm::vec3 lightAmb, glm::vec3 lightDiff, glm::vec3 lightSpec, glm::vec3 direction, float exponent, float cutoff) : _position(position), _lightAmb(lightAmb), _lightDiff(lightDiff), _lightSpec(lightSpec), _direction(direction), _exponent(exponent), _cutoff(cutoff) {}
+
+	void UpdateLight(glm::vec4 position, glm::vec3 lightAmb, glm::vec3 lightDiff, glm::vec3 lightSpec, glm::vec3 direction, float exponent, float cutoff)
+	{
+		_position = position;
+		_lightAmb = lightAmb;
+		_lightDiff = lightDiff; 
+		_lightSpec = lightSpec;
+		_direction = direction; 
+		_exponent = exponent;
+		_cutoff = cutoff;
+	}
+
+
+};
+
+
 const float pi = 3.14159f;

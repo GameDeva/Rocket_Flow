@@ -17,11 +17,15 @@ void CSkybox::Create(float size)
 	//m_cubemapTexture.Create("resources\\skyboxes\\jajdarkland1\\flipped\\jajdarkland1_rt.jpg", "resources\\skyboxes\\jajdarkland1\\flipped\\jajdarkland1_lf.jpg",
 	//	"resources\\skyboxes\\jajdarkland1\\flipped\\jajdarkland1_up.jpg", "resources\\skyboxes\\jajdarkland1\\flipped\\jajdarkland1_dn.jpg",
 	//	"resources\\skyboxes\\jajdarkland1\\flipped\\jajdarkland1_bk.jpg", "resources\\skyboxes\\jajdarkland1\\flipped\\jajdarkland1_ft.jpg");
+	m_nightCubemapTexture.Create("resources\\skyboxes\\blue\\blue_rt.png", "resources\\skyboxes\\blue\\blue_lf.png",
+		"resources\\skyboxes\\blue\\blue_dn.png", "resources\\skyboxes\\blue\\blue_up.png",
+		"resources\\skyboxes\\blue\\blue_ft.png", "resources\\skyboxes\\blue\\blue_bk.png");
 
-	m_cubemapTexture.Create("resources\\skyboxes\\envmap_interstellar\\interstellar_rt.tga", "resources\\skyboxes\\envmap_interstellar\\interstellar_lf.tga",
-		"resources\\skyboxes\\envmap_interstellar\\interstellar_dn.tga", "resources\\skyboxes\\envmap_interstellar\\interstellar_up.tga",
-		"resources\\skyboxes\\envmap_interstellar\\interstellar_bk.tga", "resources\\skyboxes\\envmap_interstellar\\interstellar_ft.tga");
-	
+
+	m_cubemapTexture.Create("resources\\skyboxes\\Daylight Box_Pieces\\Daylight Box_Right.bmp", "resources\\skyboxes\\Daylight Box_Pieces\\Daylight Box_Left.bmp",
+		"resources\\skyboxes\\Daylight Box_Pieces\\Daylight Box_Top.bmp", "resources\\skyboxes\\Daylight Box_Pieces\\Daylight Box_Bottom.bmp",
+		"resources\\skyboxes\\Daylight Box_Pieces\\Daylight Box_Back.bmp", "resources\\skyboxes\\Daylight Box_Pieces\\Daylight Box_Front.bmp");
+
 	glGenVertexArrays(1, &m_vao);
 	glBindVertexArray(m_vao);
 
@@ -84,11 +88,15 @@ void CSkybox::Create(float size)
 }
 
 // Render the skybox
-void CSkybox::Render(int textureUnit)
+void CSkybox::Render(int textureUnit, bool nightMode)
 {
 	glDepthMask(0);
 	glBindVertexArray(m_vao);
-	m_cubemapTexture.Bind(textureUnit);
+	if (nightMode)
+		m_nightCubemapTexture.Bind(textureUnit);
+	else
+		m_cubemapTexture.Bind(textureUnit);
+
 	for (int i = 0; i < 6; i++) {
 		//m_textures[i].Bind();
 		glDrawArrays(GL_TRIANGLE_STRIP, i*4, 4);

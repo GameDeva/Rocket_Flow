@@ -36,15 +36,17 @@ void CCatmullRom::SetControlPoints()
 	m_controlPoints.push_back(glm::vec3(900, 200, 271));
 	m_controlPoints.push_back(glm::vec3(600, 100, 100));
 	m_controlPoints.push_back(glm::vec3(300, 0, 0));
+	m_controlPoints.push_back(glm::vec3(150, -50, -71));
 	m_controlPoints.push_back(glm::vec3(50, -100, -71));
 	m_controlPoints.push_back(glm::vec3(-150, -205, -200));
-	m_controlPoints.push_back(glm::vec3(-400, -300, -400));
+	m_controlPoints.push_back(glm::vec3(-200, -300, -400));
+	m_controlPoints.push_back(glm::vec3(-400, -225, -290));
 	m_controlPoints.push_back(glm::vec3(-600, -150, -170));
 	m_controlPoints.push_back(glm::vec3(-100, -10, 0));
 	m_controlPoints.push_back(glm::vec3(300, 100, 100));
 	m_controlPoints.push_back(glm::vec3(600, 200, 200));
 	m_controlPoints.push_back(glm::vec3(800, 250, 301));
-
+	m_controlPoints.push_back(glm::vec3(900, 280, 400));
 	// m_controlPoints.push_back(glm::vec3(100, 5, 0)); m_controlPoints.push_back(glm::vec3(71, 5, 71)); m_controlPoints.push_back(glm::vec3(0, 5, 100)); m_controlPoints.push_back(glm::vec3(-71, 5, 71)); m_controlPoints.push_back(glm::vec3(-100, 5, 0)); m_controlPoints.push_back(glm::vec3(-71, 5, -71)); m_controlPoints.push_back(glm::vec3(0, 5, -100)); m_controlPoints.push_back(glm::vec3(71, 5, -71));
 
 
@@ -169,7 +171,7 @@ void CCatmullRom::CreateCentreline()
 	SetControlPoints();
 
 	// Call UniformlySampleControlPoints with the number of samples required
-	UniformlySampleControlPoints(500);
+	UniformlySampleControlPoints(1000);
 
 	// Create a VAO called m_vaoCentreline and a VBO to get the points onto the graphics card
 	glGenVertexArrays(1, &m_vaoCentreline); 
@@ -479,7 +481,7 @@ void CCatmullRom::RenderTrack()
 	// Bind the VAO m_vaoTrack and render it
 	glBindVertexArray(m_vaoTrack);
 	m_texture.Bind();
-	glFrontFace(GL_CULL_FACE);
+	// glFrontFace(GL_CULL_FACE);
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	for (int i = 0; i < curveSampleSize * m_centrelinePoints.size() * 4; i += curveSampleSize)
 	{

@@ -22,6 +22,8 @@ class CTetra;
 class Hero;
 struct Position;
 struct Discard;
+struct LightInfo;
+class FireBall;
 
 class Game {
 private:
@@ -42,6 +44,7 @@ private:
 	CFreeTypeFont *m_pFtFont;
 	COpenAssetImportMesh *m_pBugShipMesh;
 	COpenAssetImportMesh *m_pSkullMesh;
+	COpenAssetImportMesh *m_enemyShip;
 	CSphere *m_pSphere;
 	CHighResolutionTimer *m_pHighResolutionTimer;
 	CAudio *m_pAudio;
@@ -80,6 +83,9 @@ private:
 	double m_elapsedTime;
 	float m_t;
 
+	const float timeBetweenNightToggle = 0.5f;
+	float currentNightToggleTimer = 0.f;
+
 	float xCurrentPos;
 
 	const float trackWidth = 40.f;
@@ -90,6 +96,12 @@ private:
 	
 	vector<Position> cratePositions;
 	vector<Position> gemPositions;
+	vector<FireBall*> enemyPositions;
+
+	void UpdateEnemyPositions();
+
+	bool nightMode = false;
+	void Game::AddLight(CShaderProgram *&shaderProgram, string index, glm::mat4 &viewMatrix, glm::mat3 &viewNormalMatrix, const LightInfo &lightInfo);
 
 	void RenderWater();
 

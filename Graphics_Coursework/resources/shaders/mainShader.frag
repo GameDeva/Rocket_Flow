@@ -23,7 +23,9 @@ struct MaterialInfo
 };
 
 // Lights and materials passed in as uniform variables from client programme
-uniform LightInfo light1; 
+uniform LightInfo dayLight;
+uniform LightInfo light[8]; 
+uniform int lightCount;
 uniform MaterialInfo material1; 
 
 
@@ -34,6 +36,7 @@ in vec3 vEyeNorm;
 
 out vec4 vOutputColour;		// The output colour
 
+uniform bool nightMode;
 uniform sampler2D sampler0;  // The texture sampler
 uniform samplerCube CubeMapTex;
 uniform bool bUseTexture;    // A flag indicating if texture-mapping should be applied
@@ -46,44 +49,44 @@ in vec3 worldPosition;
 // This function implements the Phong shading model
 // The code is based on the OpenGL 4.0 Shading Language Cookbook, Chapter 2, pp. 62 - 63, with a few tweaks. 
 // Please see Chapter 2 of the book for a detailed discussion.
-vec3 PhongModel(vec4 eyePosition, vec3 eyeNorm)
-{
-	vec3 s = normalize(vec3(light1.position - eyePosition));
-	vec3 v = normalize(-eyePosition.xyz);
-	vec3 r = reflect(-s, eyeNorm);
-	vec3 n = eyeNorm;
+//vec3 PhongModel(vec4 eyePosition, vec3 eyeNorm)
+//{
+//	vec3 s = normalize(vec3(light1.position - eyePosition));
+//	vec3 v = normalize(-eyePosition.xyz);
+//	vec3 r = reflect(-s, eyeNorm);
+//	vec3 n = eyeNorm;
 
 
-	vec3 ambient = light1.La * material1.Ma;
-	float sDotN = max(dot(s, n), 0.0f);
-	vec3 diffuse = light1.Ld * material1.Md * sDotN;
-	vec3 specular = vec3(0.0f);
-	float eps = 0.000001f; // add eps to shininess below -- pow not defined if second argument is 0 (as described in GLSL documentation)
-	if (sDotN > 0.0f) 
-		specular = light1.Ls * material1.Ms * pow(max(dot(r, v), 0.0f), material1.shininess + eps);
+//	vec3 ambient = light1.La * material1.Ma;
+//	float sDotN = max(dot(s, n), 0.0f);
+//	vec3 diffuse = light1.Ld * material1.Md * sDotN;
+//	vec3 specular = vec3(0.0f);
+//	float eps = 0.000001f; // add eps to shininess below -- pow not defined if second argument is 0 (as described in GLSL documentation)
+//	if (sDotN > 0.0f) 
+//		specular = light1.Ls * material1.Ms * pow(max(dot(r, v), 0.0f), material1.shininess + eps);
 	
 
-	return ambient + diffuse + specular;
+//	return ambient + diffuse + specular;
 
-}
+//}
 
 // Blinn Phong approximation
-vec3 BlinnPhongModel(vec4 eyePosition, vec3 eyeNorm)
+vec3 BlinnPhongModel(LightInfo l, vec4 eyePosition, vec3 eyeNorm)
 {
-	vec3 s = normalize(vec3(light1.position - eyePosition));
+	vec3 s = normalize(vec3(l.position - eyePosition));
 	vec3 v = normalize(-eyePosition.xyz);
 	vec3 r = reflect(-s, eyeNorm);
 	vec3 n = eyeNorm;
 	
 	vec3 h = normalize(v + s);
 
-	vec3 ambient = light1.La * material1.Ma;
+	vec3 ambient = l.La * material1.Ma;
 	float sDotN = max(dot(s, n), 0.0f);
-	vec3 diffuse = light1.Ld * material1.Md * sDotN;
+	vec3 diffuse = l.Ld * material1.Md * sDotN;
 	vec3 specular = vec3(0.0f);
 	float eps = 0.000001f; // add eps to shininess below -- pow not defined if second argument is 0 (as described in GLSL documentation)
 	if (sDotN > 0.0f) 
-		specular = light1.Ls * material1.Ms * pow(max(dot(h, n), 0.0f), material1.shininess + eps);
+		specular = l.Ls * material1.Ms * pow(max(dot(h, n), 0.0f), material1.shininess + eps);
 	
 
 	return ambient + diffuse + specular;
@@ -91,33 +94,35 @@ vec3 BlinnPhongModel(vec4 eyePosition, vec3 eyeNorm)
 }
 
 
-vec3 BlinnPhongSpotlightModel(vec4 p, vec3 n)
+vec3 BlinnPhongSpotlightModel(LightInfo l, vec4 p, vec3 n)
 {
-	vec3 s = normalize(vec3(light1.position -p));
-	float angle = acos(dot(-s, light1.direction));
-	float cutoff = radians(clamp(light1.cutoff, 0.0, 90.0));
-	vec3 ambient = light1.La * material1.Ma;
+	vec3 s = normalize(vec3(l.position -p));
+	float angle = acos(dot(-s, l.direction));
+	float cutoff = radians(clamp(l.cutoff, 0.0, 90.0));
+	vec3 ambient = l.La * material1.Ma;
 	if(angle < cutoff) 
 	{
-		float spotFactor = pow(dot(-s, light1.direction), light1.exponent);
+		float spotFactor = pow(dot(-s, l.direction), l.exponent);
 		vec3 v = normalize(-p.xyz);
 		vec3 h = normalize(v + s);
 		float sDotN = max(dot(s, n), 0.0);
-		vec3 diffuse = light1.Ld * material1.Md * sDotN;
+		vec3 diffuse = l.Ld * material1.Md * sDotN;
 		vec3 specular = vec3(0.0);
 		if(sDotN > 0.0)
-			specular = light1.Ls * material1.Ms * pow(max(dot(h, n), 0.0), material1.shininess);
+			specular = l.Ls * material1.Ms * pow(max(dot(h, n), 0.0), material1.shininess);
 		return ambient + spotFactor * (diffuse + specular);
 	}
 	else
+	{
 		return ambient;
+	}
 }
 
 
 
 void main()
 {
-	vec3 vColour;
+	vec3 vColour = vec3(0);
 
 	if (renderSkybox) {
 		vOutputColour = texture(CubeMapTex, worldPosition);
@@ -133,15 +138,25 @@ void main()
 		}
 		else 
 		{
+			if(nightMode)
+			{
+				// vColour += BlinnPhongModel(dayLight, vEyePosition, normalize(vEyeNorm));
+				for(int i = 0; i < lightCount; i++)
+				{
+					vColour += BlinnPhongSpotlightModel(light[i], vEyePosition, normalize(vEyeNorm));
+				}
+			}
+			else 
+			{
+				vColour = BlinnPhongModel(dayLight, vEyePosition, normalize(vEyeNorm));
+			}
 			if (bUseTexture)
 			{
-				vColour = BlinnPhongModel(vEyePosition, normalize(vEyeNorm));
 				vOutputColour = vTexColour*vec4(vColour, 1.0f);	// Combine object colour and texture 
 			}
 			else
 			{
-				vColour = BlinnPhongModel(vEyePosition, normalize(vEyeNorm));
-				vOutputColour = vec4(vColour, 1.0f);	// Just use the colour instead
+				vOutputColour = vec4(vColour, 1.0f);	// Just use the colour	instead
 			}
 		}
 	}

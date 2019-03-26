@@ -53,6 +53,7 @@ Game::Game()
 	m_pCube = NULL;
 	m_phero = NULL;
 	m_pcamera = NULL;
+	m_enemyShip - NULL;
 
 	deltaTime = 0.0;
 	m_framesPerSecond = 0;
@@ -76,6 +77,7 @@ Game::~Game()
 	delete m_pGemTetra;
 	delete m_phero;
 	delete m_pcamera;
+	delete m_enemyShip;
 
 	if (m_pShaderPrograms != NULL) {
 		for (unsigned int i = 0; i < m_pShaderPrograms->size(); i++)
@@ -108,6 +110,7 @@ void Game::Initialise()
 	m_pGemTetra = new CTetra;
 	m_phero = new Hero;
 	m_pcamera = new CCamera;
+	m_enemyShip = new COpenAssetImportMesh;
 
 	RECT dimensions = m_gameWindow.GetDimensions();
 	// m_gameWindow.SetFullscreen();
@@ -182,7 +185,7 @@ void Game::Initialise()
 	m_pSkybox->Create(2500.0f);
 	
 	// Cube creation
-	m_pCube->Create("resources\\textures\\box.jpg");
+	m_pCube->Create("resources\\textures\\scifibox.jpg");
 
 	// Gem creation
 	m_pGemTetra->Create("resources\\textures\\redCrystal.jpg");
@@ -195,7 +198,8 @@ void Game::Initialise()
 
 	// Load some meshes in OBJ format
 	m_pBugShipMesh->Load("resources\\models\\orbiter bugship\\orbiter bugship.obj"); // Downloaded from turbosquid
-	m_pSkullMesh->Load("resources\\models\\Skull Low Poly\\Skull Low Poly.obj");
+	m_pSkullMesh->Load("resources\\models\\Skull Low Poly\\Skull Low Poly.obj");// ^^
+	m_enemyShip->Load("resources\\models\\Trident\\Trident-A10.obj");// ^^
 
 	// Create a sphere
 	m_pSphere->Create("resources\\textures\\", "fireball.jpg", 25, 25);  // Texture downloaded from http://www.psionicgames.com/?page_id=26 on 24 Jan 2013
@@ -207,7 +211,9 @@ void Game::Initialise()
 	m_pAudio->LoadMusicStream("Resources\\Audio\\Dreams_Instru.mp3");	// J Cole - Dreams Instrumental
 	m_pAudio->PlayMusicStream();
 
-	
+	// Enemy list
+	enemyPositions = vector<FireBall*>();
+
 	// Gem
 	int i = 0;
 	int incrementer = 1000;
@@ -312,7 +318,7 @@ void Game::Render()
 	// Clear the buffers and enable depth testing (z-buffering)
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
-
+	
 	// Set up a matrix stack
 	glutil::MatrixStack modelViewMatrixStack;
 	modelViewMatrixStack.SetIdentity();
@@ -336,26 +342,71 @@ void Game::Render()
 	glm::mat4 viewMatrix = modelViewMatrixStack.Top();
 	glm::mat3 viewNormalMatrix = m_pcamera->ComputeNormalMatrix(viewMatrix);
 
-	//glm::vec3 light1 = glm::vec3(0.2f, 0.f, 0.5f);
-	//glm::vec3 light1 = glm::vec3(0.2f, 0.f, 0.5f);
-	//glm::vec3 light1 = glm::vec3(0.2f, 0.f, 0.5f);
+	pMainProgram->SetUniform("nightMode", nightMode);
+	if (nightMode)
+	{
+		pMainProgram->SetUniform("lightCount", m_phero->spotLightCount);
 
-	// Set light and materials in main shader program
-	glm::vec4 lightPosition1 = glm::vec4(-100, 100, -100, 1); // Position of light source *in world coordinates*
-	pMainProgram->SetUniform("light1.position", viewMatrix*lightPosition1); // Position of light source *in eye coordinates*
-	pMainProgram->SetUniform("light1.La", glm::vec3(1));		// Ambient colour of light
-	pMainProgram->SetUniform("light1.Ld", glm::vec3(1));		// Diffuse colour of light
-	pMainProgram->SetUniform("light1.Ls", glm::vec3(1));		// Specular colour of light
-	pMainProgram->SetUniform("light1.direction", glm::normalize(viewNormalMatrix*glm::vec3(0, -1, 0)));		// Direction of spot light
-	pMainProgram->SetUniform("light1.exponent", 2.f);		// Exponent of spot light
-	pMainProgram->SetUniform("light1.cutoff", 0.1f);		// Cutoff of spot light
+		// Initalise all lights
+		vector<LightInfo*> spotLights = m_phero->getspotLights();
+		if (spotLights.size() != 0)
+		{
+			for (int i = 0; i < spotLights.size(); i++)
+			{
+				AddLight(pMainProgram, to_string(i), viewMatrix, viewNormalMatrix, *spotLights[i]);
+			}
+		}
+		//pMainProgram->SetUniform("dayLight.position", viewMatrix * m_phero->dayLight->_position); // Position of light source *in eye coordinates*
+		//pMainProgram->SetUniform("dayLight.La", m_phero->dayLight->_lightAmb);		// Ambient colour of light
+		//pMainProgram->SetUniform("dayLight.Ld", m_phero->dayLight->_lightDiff);		// Diffuse colour of light
+		//pMainProgram->SetUniform("dayLight.Ls", m_phero->dayLight->_lightSpec);		// Specular colour of light
+		//pMainProgram->SetUniform("dayLight.direction", glm::normalize(viewNormalMatrix*m_phero->dayLight->_direction));		// Direction of spot light
+		//pMainProgram->SetUniform("dayLight.exponent", m_phero->dayLight->_exponent);		// Exponent of spot light
+		//pMainProgram->SetUniform("dayLight.cutoff", m_phero->dayLight->_cutoff);		// Cutoff of spot light
 
+		pMainProgram->SetUniform("material1.Ma", glm::vec3(0.f));	// Ambient material reflectance
+		pMainProgram->SetUniform("material1.Md", glm::vec3(0.5f));	// Diffuse material reflectance
+		pMainProgram->SetUniform("material1.Ms", glm::vec3(0.5f));	// Specular material reflectance
+		pMainProgram->SetUniform("material1.shininess", 15.0f);		// Shininess material property
 
-	pMainProgram->SetUniform("material1.Ma", glm::vec3(1.0f));	// Ambient material reflectance
-	pMainProgram->SetUniform("material1.Md", glm::vec3(0.0f));	// Diffuse material reflectance
-	pMainProgram->SetUniform("material1.Ms", glm::vec3(0.0f));	// Specular material reflectance
-	pMainProgram->SetUniform("material1.shininess", 15.0f);		// Shininess material property
-		
+	}
+	else {
+		// AddLight(pMainProgram, to_string(0), viewMatrix, viewNormalMatrix, *m_phero->dayLight);
+
+		pMainProgram->SetUniform("dayLight.position", viewMatrix * m_phero->dayLight->_position); // Position of light source *in eye coordinates*
+		pMainProgram->SetUniform("dayLight.La", m_phero->dayLight->_lightAmb);		// Ambient colour of light
+		pMainProgram->SetUniform("dayLight.Ld", m_phero->dayLight->_lightDiff);		// Diffuse colour of light
+		pMainProgram->SetUniform("dayLight.Ls", m_phero->dayLight->_lightSpec);		// Specular colour of light
+		pMainProgram->SetUniform("dayLight.direction", glm::normalize(viewNormalMatrix*m_phero->dayLight->_direction));		// Direction of spot light
+		pMainProgram->SetUniform("dayLight.exponent", m_phero->dayLight->_exponent);		// Exponent of spot light
+		pMainProgram->SetUniform("dayLight.cutoff", m_phero->dayLight->_cutoff);		// Cutoff of spot light
+
+		pMainProgram->SetUniform("material1.Ma", glm::vec3(1.f));	// Ambient material reflectance
+		pMainProgram->SetUniform("material1.Md", glm::vec3(0.5f));	// Diffuse material reflectance
+		pMainProgram->SetUniform("material1.Ms", glm::vec3(0.5f));	// Specular material reflectance	
+		pMainProgram->SetUniform("material1.shininess", 15.0f);		// Shininess material property
+
+	}
+
+	if (nightMode)
+	{
+		vector<LightInfo*> spotLights = m_phero->getspotLights();
+		if (spotLights.size() != 0)
+		{
+			for (int i = 0; i < spotLights.size(); i++)
+			{
+				modelViewMatrixStack.Push();
+				modelViewMatrixStack.Translate(glm::vec3(spotLights[i]->_position));
+				modelViewMatrixStack.Scale(1.5f);
+				pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+				pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+				m_pGemTetra->Render();
+				modelViewMatrixStack.Pop();
+
+			}
+		}
+	}
+
 
 	// Render the skybox and terrain with full ambient reflectance 
 	modelViewMatrixStack.Push();
@@ -365,39 +416,31 @@ void Game::Render()
 		modelViewMatrixStack.Translate(vEye);
 		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 		pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-		m_pSkybox->Render(cubeMapTextureUnit);
+		m_pSkybox->Render(cubeMapTextureUnit, nightMode);
 		pMainProgram->SetUniform("renderSkybox", false);
 	modelViewMatrixStack.Pop();
 
 	// Render the planar terrain
-	modelViewMatrixStack.Push();
+	/*modelViewMatrixStack.Push();
 		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 		pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
 		m_pPlanarTerrain->Render();
 	modelViewMatrixStack.Pop();
-
-
-	// Turn on diffuse + specular materials
-	pMainProgram->SetUniform("material1.Ma", glm::vec3(0.5f));	// Ambient material reflectance
-	pMainProgram->SetUniform("material1.Md", glm::vec3(0.5f));	// Diffuse material reflectance
-	pMainProgram->SetUniform("material1.Ms", glm::vec3(1.0f));	// Specular material reflectance	
-
-
+*/
 	// Render the Cubes
-
 	int size = cratePositions.size();
 	for(int i = 0; i < size; i++) 
 	{
 		modelViewMatrixStack.Push();
 		modelViewMatrixStack.Translate(cratePositions[i]._point);
 		modelViewMatrixStack *= cratePositions[i].getOrientation();
-		modelViewMatrixStack.Rotate(glm::vec3(0, 1, 0), m_t);
+		modelViewMatrixStack.Rotate(cratePositions[i]._N, m_t);
+		modelViewMatrixStack.Rotate(cratePositions[i]._T, m_t);
 		modelViewMatrixStack.Scale(3.f);
 		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 		pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
 		m_pCube->Render();
 		modelViewMatrixStack.Pop();
-
 	}
 
 	// Tetrahedron
@@ -407,11 +450,12 @@ void Game::Render()
 		modelViewMatrixStack.Push();
 		modelViewMatrixStack.Translate(gemPositions[i]._point);
 		modelViewMatrixStack *= gemPositions[i].getOrientation();
-		modelViewMatrixStack.Rotate(glm::vec3(0, 1, 0), m_t);
-		modelViewMatrixStack.Scale(3.f);
+		modelViewMatrixStack.Rotate(gemPositions[i]._N, m_t);
+		modelViewMatrixStack.Rotate(gemPositions[i]._T, m_t);
+		modelViewMatrixStack.Scale(0.01f);
 		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 		pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-		m_pGemTetra->Render();
+		m_enemyShip->Render();
 		modelViewMatrixStack.Pop();
 	}
 
@@ -447,7 +491,7 @@ void Game::Render()
 			modelViewMatrixStack.Push();
 			modelViewMatrixStack.Translate((*it)->_position._point);
 			modelViewMatrixStack *= (*it)->_position.getOrientation();
-			modelViewMatrixStack.Scale(3.f);
+			modelViewMatrixStack.Scale(2.f);
 			pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 			pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
 			m_pSphere->Render();
@@ -475,7 +519,7 @@ void Game::Render()
 			modelViewMatrixStack.Push();
 			modelViewMatrixStack.Translate((*it)->_position._point);
 			modelViewMatrixStack *= (*it)->_position.getOrientation();
-			modelViewMatrixStack.Scale(3.f);
+			modelViewMatrixStack.Scale(2.f);
 			pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 			pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
 			m_pSphere->Render();
@@ -488,7 +532,17 @@ void Game::Render()
 	}
 
 
-	RenderWater();
+
+	// Spline Render
+	modelViewMatrixStack.Push();
+	pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+	pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+	// m_catmull->RenderCentreline();
+	// m_catmull->RenderOffsetCurves();
+	m_catmull->RenderTrack();
+	modelViewMatrixStack.Pop();
+
+	// RenderWater();
 
 	// Draw the 2D graphics after the 3D graphics
 	DisplayHUD();
@@ -503,12 +557,29 @@ void Game::Update()
 {
 	// Increase sample rate 
 	m_t += m_phero->moveSpeed * 0.001f* (float)deltaTime; 
+	currentNightToggleTimer += (float)deltaTime * 0.001;
+	// Night mode toggle
+	if (GetKeyState(VK_NUMPAD7) & 0x80 && currentNightToggleTimer > timeBetweenNightToggle)
+	{
+		nightMode = !nightMode;
+		currentNightToggleTimer = 0.f;
+	}
 
 	// Check if pass in of catmul is ok
 	m_phero->Update(deltaTime, m_t, *m_catmull);
 	m_phero->UpdateCamera(deltaTime, *m_pcamera);
 
 	m_pAudio->Update();
+}
+
+void Game::UpdateEnemyPositions()
+{
+	// Enemies
+	 for (int i = 0; i < enemyPositions.size();)
+	{
+		enemyPositions[i]->Update(deltaTime, *m_catmull);
+		++i;
+	}
 }
 
 void Game::CheckForCollisions()
@@ -645,10 +716,6 @@ void Game::RenderWater()
 	glm::mat4 viewMatrix = modelViewMatrixStack.Top();
 	glm::mat3 viewNormalMatrix = m_pcamera->ComputeNormalMatrix(viewMatrix);
 
-	//glm::vec3 light1 = glm::vec3(0.2f, 0.f, 0.5f);
-	//glm::vec3 light1 = glm::vec3(0.2f, 0.f, 0.5f);
-	//glm::vec3 light1 = glm::vec3(0.2f, 0.f, 0.5f);
-
 	// Set light and materials in main shader program
 	glm::vec4 lightPosition1 = glm::vec4(-100, 100, -100, 1); // Position of light source *in world coordinates*
 	circularWaterProgram->SetUniform("light1.position", viewMatrix*lightPosition1); // Position of light source *in eye coordinates*
@@ -669,15 +736,25 @@ void Game::RenderWater()
 	modelViewMatrixStack.Push();
 		circularWaterProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 		circularWaterProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-		m_catmull->RenderCentreline();
-		m_catmull->RenderOffsetCurves();
+		// m_catmull->RenderCentreline();
+		// m_catmull->RenderOffsetCurves();
 		m_catmull->RenderTrack();
 	modelViewMatrixStack.Pop();
 
 
+}
 
+void Game::AddLight(CShaderProgram *&shaderProgram, string index, glm::mat4 &viewMatrix, glm::mat3 &viewNormalMatrix, const LightInfo &lightInfo)
+{
 
-
+	// glm::vec4 lightPosition1 = glm::vec4(0, 50, 0, 1); // Position of light source *in world coordinates*
+	shaderProgram->SetUniform("light[" + index + "].position", viewMatrix * lightInfo._position); // Position of light source *in eye coordinates*
+	shaderProgram->SetUniform("ligh[" + index + "].La", lightInfo._lightAmb);		// Ambient colour of light
+	shaderProgram->SetUniform("light[" + index + "].Ld", lightInfo._lightDiff);		// Diffuse colour of light
+	shaderProgram->SetUniform("light[" + index + "].Ls", lightInfo._lightSpec);		// Specular colour of light
+	shaderProgram->SetUniform("light[" + index + "].direction", glm::normalize(viewNormalMatrix* lightInfo._direction));		// Direction of spot light
+	shaderProgram->SetUniform("light[" + index + "].exponent", lightInfo._exponent);		// Exponent of spot light
+	shaderProgram->SetUniform("light[" + index + "].cutoff", lightInfo._cutoff);		// Cutoff of spot light
 }
 
 // The game loop runs repeatedly until game over

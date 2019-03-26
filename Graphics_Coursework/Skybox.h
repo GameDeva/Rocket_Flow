@@ -11,12 +11,13 @@ public:
 	CSkybox();
 	~CSkybox();
 	void Create(float size);
-	void Render(int textureUnit);
+	void Render(int textureUnit, bool nightMode);
 	void Release();
 
 private:
 	UINT m_vao;
 	CVertexBufferObject m_vbo;
 	CCubemap m_cubemapTexture;
+	CCubemap m_nightCubemapTexture;
 	
 };
