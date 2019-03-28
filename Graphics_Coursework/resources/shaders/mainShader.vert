@@ -20,6 +20,8 @@ out vec2 vTexCoord;	// Texture coordinate
 out vec4 vEyePosition;
 out vec3 vEyeNorm;
 
+
+
 out vec3 worldPosition;	// used for skybox
 
 // This is the entry point into the vertex shader
@@ -30,7 +32,7 @@ void main()
 	worldPosition = inPosition;
 
 	// Transform the vertex spatial position using 
-	gl_Position = matrices.projMatrix * matrices.modelViewMatrix * vec4(inPosition, 1.0f);
+	gl_Position = matrices.modelViewMatrix * vec4(inPosition, 1.0f);
 	
 	// Get the vertex normal and vertex position in eye coordinates
 	vEyeNorm = normalize(matrices.normalMatrix * inNormal);

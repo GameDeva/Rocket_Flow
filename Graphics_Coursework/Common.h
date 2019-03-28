@@ -17,5 +17,6 @@
 #include <math.h>
 
 #include "Helper.h"
+#include "PerlinNoise.h"
 
 using namespace std;

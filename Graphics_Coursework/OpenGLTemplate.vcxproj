@@ -127,6 +127,7 @@
     <ClInclude Include="Helper.h" />
     <ClInclude Include="Hero.h" />
     <ClInclude Include="HighResolutionTimer.h" />
+    <ClInclude Include="PerlinNoise.h" />
     <ClInclude Include="MatrixStack.h" />
     <ClInclude Include="OpenAssetImportMesh.h" />
     <ClInclude Include="Plane.h" />
@@ -139,6 +140,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\mainShader.frag" />
+    <None Include="resources\shaders\mainShader.geom" />
     <None Include="resources\shaders\mainShader.vert" />
     <None Include="resources\shaders\textShader.frag" />
     <None Include="resources\shaders\textShader.vert" />

@@ -2,34 +2,21 @@
   Game.cpp
 c:\opengl projects\graphics_coursework\graphics_coursework\fireball.h(26): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
 c:\opengl projects\graphics_coursework\graphics_coursework\fireball.h(27): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(56): warning C4552: '-': result of expression not used
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(224): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(235): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(245): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(256): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(271): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(282): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(293): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(304): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(354): warning C4018: '<': signed/unsigned mismatch
-c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(396): warning C4018: '<': signed/unsigned mismatch
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(55): warning C4552: '-': result of expression not used
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(226): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(237): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(247): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(258): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(273): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(284): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(295): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(306): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(358): warning C4018: '<': signed/unsigned mismatch
 c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(560): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
 c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(569): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(570): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(578): warning C4018: '<': signed/unsigned mismatch
 c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(580): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-  Hero.cpp
-c:\opengl projects\graphics_coursework\graphics_coursework\fireball.h(26): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\fireball.h(27): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\hero.cpp(34): warning C4018: '<': signed/unsigned mismatch
-c:\opengl projects\graphics_coursework\graphics_coursework\hero.cpp(42): warning C4018: '<': signed/unsigned mismatch
-c:\opengl projects\graphics_coursework\graphics_coursework\hero.cpp(50): warning C4018: '<': signed/unsigned mismatch
-c:\opengl projects\graphics_coursework\graphics_coursework\hero.cpp(93): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\hero.cpp(152): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\hero.cpp(159): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\hero.cpp(166): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-c:\opengl projects\graphics_coursework\graphics_coursework\hero.cpp(178): warning C4018: '<': signed/unsigned mismatch
-c:\opengl projects\graphics_coursework\graphics_coursework\hero.cpp(199): warning C4018: '<': signed/unsigned mismatch
-c:\opengl projects\graphics_coursework\graphics_coursework\hero.cpp(231): warning C4018: '<': signed/unsigned mismatch
-  Generating Code...
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(682): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(751): warning C4018: '<': signed/unsigned mismatch
   OpenGLTemplate.vcxproj -> C:\OpenGl Projects\Graphics_Coursework\Debug\Graphics_Coursework.exe

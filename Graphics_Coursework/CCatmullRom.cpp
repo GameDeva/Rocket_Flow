@@ -351,6 +351,8 @@ void CCatmullRom::CreateTrack()
 	m_texture.SetSamplerObjectParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
 	m_texture.SetSamplerObjectParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
 
+	// Index values for perlin noise
+	vector<glm::vec2>  indexValues = vector<glm::vec2>();
 
 	// Generate a VAO called m_vaoTrack and a VBO to get the offset curve points and indices on the graphics card
 	glGenVertexArrays(1, &m_vaoTrack);
@@ -362,15 +364,20 @@ void CCatmullRom::CreateTrack()
 	vboFlip.Create();
 	
 	int size = m_centrelinePoints.size();
-	for (int i = 0; i < size - 1; i++)
+	for (int i = 0; i < size; i++)
 	{
 
 		for (int j = 0; j < curveSampleSize; j++)
 		{
 			p.push_back(m_offsetPoints[i][(j + 1) % curveSampleSize]);
 			p.push_back(m_offsetPoints[i][j]);
-			p.push_back(m_offsetPoints[i + 1][(j + 1) % curveSampleSize]);
-			p.push_back(m_offsetPoints[i + 1][j]);
+			p.push_back(m_offsetPoints[(i + 1) % size][(j + 1) % curveSampleSize]);
+			p.push_back(m_offsetPoints[(i + 1) % size][j]);
+
+			indexValues.push_back(glm::vec2(i, (j + 1) % curveSampleSize));
+			indexValues.push_back(glm::vec2(i, j));
+			indexValues.push_back(glm::vec2((i + 1) % size, (j + 1) % curveSampleSize));
+			indexValues.push_back(glm::vec2((i + 1) % size, j));
 
 			// Flipped
 			//pFlip.push_back(m_offsetPoints[i][j]);
@@ -385,7 +392,7 @@ void CCatmullRom::CreateTrack()
 			s.push_back(glm::vec2(1.f, 1.f));
 
 			// Calc normal
-			n.push_back(glm::cross(m_offsetPoints[i][(j + 1) % curveSampleSize] - m_offsetPoints[i][j], m_offsetPoints[i + 1][j] - m_offsetPoints[i][j]));
+			n.push_back(glm::cross(m_offsetPoints[i][(j + 1) % curveSampleSize] - m_offsetPoints[i][j], m_offsetPoints[(i + 1) % size][j] - m_offsetPoints[i][j]));
 
 		}
 
@@ -398,6 +405,7 @@ void CCatmullRom::CreateTrack()
 		vbo.AddData(&p[i], sizeof(glm::vec3));
 		vbo.AddData(&s[i], sizeof(glm::vec2));
 		vbo.AddData(&n[j], sizeof(glm::vec3));
+		vbo.AddData(&indexValues[i], sizeof(glm::vec2));
 
 		// Increase j after 4 passes of i
 		if (i % 4 == 0 && i != 0)
@@ -409,7 +417,7 @@ void CCatmullRom::CreateTrack()
 	// Upload the VBO to the GPU
 	vbo.UploadDataToGPU(GL_STATIC_DRAW);
 	// Set the vertex attribute locations
-	GLsizei stride = 2 * sizeof(glm::vec3) + sizeof(glm::vec2);
+	GLsizei stride = 2 * sizeof(glm::vec3) + 2 * sizeof(glm::vec2);
 	// Vertex positions
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, 0);
@@ -419,7 +427,9 @@ void CCatmullRom::CreateTrack()
 	// Normal vectors
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(glm::vec3) + sizeof(glm::vec2)));
-
+	// Index Value coordinates for perlin noise
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(glm::vec3) + sizeof(glm::vec2) + sizeof(glm::vec3)));
 	// ---- 
 
 	//vboFlip.Bind();
@@ -538,7 +548,6 @@ void CCatmullRom::UpdatePositionToEdge(glm::vec3 newPoint, Position &position)
 
 }
 
-
 void CCatmullRom::SuperTNBMaker(Position &position, float angle, float radius, float m_t)
 {
 	if (!flipMode)
@@ -552,6 +561,28 @@ void CCatmullRom::SuperTNBMaker(Position &position, float angle, float radius, f
 		glm::vec3 newPoint = positionAtAngle(position, angle, radius);
 		UpdatePositionToEdge(newPoint, position);
 	}
+
+
+}
+
+
+void CCatmullRom::PerlinateOffsetPoints()
+{
+	//int seed = 12345;
+	//int octaves = 8;
+	//float frequency = 8.f;
+
+	//PerlinNoise perlinNoise = PerlinNoise(seed);
+
+	//int size = m_centrelinePoints.size();
+	//for (int i = 0; i < size - 1; i++)
+	//{
+
+	//	for (int j = 0; j < curveSampleSize; j++)
+	//	{
+	//		perlinNoise.octaveNoise0_1()
+	//	}
+	//}
 
 
 }

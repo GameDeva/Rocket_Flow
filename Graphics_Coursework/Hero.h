@@ -55,6 +55,7 @@ public:
 	const int spotLightCount = 8;
 
 	LightInfo *dayLight;
+	LightInfo *nightLight;
 
 private:
 
@@ -98,6 +99,6 @@ private:
 
 	const float distanceBetweenSpotLights = 40.f;
 	void InitialiseSpotLights();
-	void UpdateSpotLights();
+	void UpdateSpotLights(float m_t, CCatmullRom &catmul);
 };
 

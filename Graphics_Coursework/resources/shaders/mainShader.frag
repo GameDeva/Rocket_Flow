@@ -24,15 +24,16 @@ struct MaterialInfo
 
 // Lights and materials passed in as uniform variables from client programme
 uniform LightInfo dayLight;
+uniform LightInfo nightLight;
 uniform LightInfo light[8]; 
 uniform int lightCount;
 uniform MaterialInfo material1; 
 
 
 // in vec3 vColour;			// Interpolated colour using colour calculated in the vertex shader
-in vec2 vTexCoord;			// Interpolated texture coordinate using texture coordinate from the vertex shader
-in vec4 vEyePosition;
-in vec3 vEyeNorm;
+in vec2 gTexCoord;			// Interpolated texture coordinate using texture coordinate from the vertex shader
+in vec4 gEyePosition;
+in vec3 gEyeNorm;
 
 out vec4 vOutputColour;		// The output colour
 
@@ -43,32 +44,8 @@ uniform bool bUseTexture;    // A flag indicating if texture-mapping should be a
 uniform bool renderSkybox;
 uniform bool applyDiscard;
 uniform float discardValue;
-in vec3 worldPosition;
+in vec3 gWorldPosition;
 
-
-// This function implements the Phong shading model
-// The code is based on the OpenGL 4.0 Shading Language Cookbook, Chapter 2, pp. 62 - 63, with a few tweaks. 
-// Please see Chapter 2 of the book for a detailed discussion.
-//vec3 PhongModel(vec4 eyePosition, vec3 eyeNorm)
-//{
-//	vec3 s = normalize(vec3(light1.position - eyePosition));
-//	vec3 v = normalize(-eyePosition.xyz);
-//	vec3 r = reflect(-s, eyeNorm);
-//	vec3 n = eyeNorm;
-
-
-//	vec3 ambient = light1.La * material1.Ma;
-//	float sDotN = max(dot(s, n), 0.0f);
-//	vec3 diffuse = light1.Ld * material1.Md * sDotN;
-//	vec3 specular = vec3(0.0f);
-//	float eps = 0.000001f; // add eps to shininess below -- pow not defined if second argument is 0 (as described in GLSL documentation)
-//	if (sDotN > 0.0f) 
-//		specular = light1.Ls * material1.Ms * pow(max(dot(r, v), 0.0f), material1.shininess + eps);
-	
-
-//	return ambient + diffuse + specular;
-
-//}
 
 // Blinn Phong approximation
 vec3 BlinnPhongModel(LightInfo l, vec4 eyePosition, vec3 eyeNorm)
@@ -125,34 +102,34 @@ void main()
 	vec3 vColour = vec3(0);
 
 	if (renderSkybox) {
-		vOutputColour = texture(CubeMapTex, worldPosition);
+		vOutputColour = texture(CubeMapTex, gWorldPosition);
 
 	} else {
 
 		// Get the texel colour from the texture sampler
-		vec4 vTexColour = texture(sampler0, vTexCoord);	
+		vec4 gTexColour = texture(sampler0, gTexCoord);	
 
 		// Check should discard fragment
-		if(applyDiscard && vTexColour.r < discardValue) {
+		if(applyDiscard && gTexColour.r < discardValue) {
 			discard;
 		}
 		else 
 		{
 			if(nightMode)
 			{
-				// vColour += BlinnPhongModel(dayLight, vEyePosition, normalize(vEyeNorm));
+				vColour += BlinnPhongModel(nightLight, gEyePosition, normalize(gEyeNorm));
 				for(int i = 0; i < lightCount; i++)
 				{
-					vColour += BlinnPhongSpotlightModel(light[i], vEyePosition, normalize(vEyeNorm));
+					vColour += BlinnPhongSpotlightModel(light[i], gEyePosition, normalize(gEyeNorm));
 				}
 			}
 			else 
 			{
-				vColour = BlinnPhongModel(dayLight, vEyePosition, normalize(vEyeNorm));
+				vColour = BlinnPhongModel(dayLight, gEyePosition, normalize(gEyeNorm));
 			}
 			if (bUseTexture)
 			{
-				vOutputColour = vTexColour*vec4(vColour, 1.0f);	// Combine object colour and texture 
+				vOutputColour = gTexColour*vec4(vColour, 1.0f);	// Combine object colour and texture 
 			}
 			else
 			{

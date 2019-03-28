@@ -7,6 +7,7 @@ Hero::Hero()
 	InitialiseSpotLights();
 
 	dayLight = new LightInfo(glm::vec4(-100, 100, -100, 1), glm::vec3(1), glm::vec3(1), glm::vec3(1), glm::vec3(0.f, -1.f, 0.f), 1.f, 15.f);
+	nightLight = new LightInfo(glm::vec4(-100, 100, -100, 1), glm::vec3(0.5), glm::vec3(0.5), glm::vec3(0.5), glm::vec3(0.f, -1.f, 0.f), 1.f, 15.f);
 
 	discard = Discard(2.f, true);
 	discard.Start();
@@ -54,6 +55,7 @@ Hero::~Hero()
 	}
 
 	delete dayLight;
+	delete nightLight;
 }
 
 // Initialise hero object
@@ -95,7 +97,7 @@ void Hero::Update(float deltaTime, float m_t, CCatmullRom &catmul)
 		}
 	}
 	
-	UpdateSpotLights();
+	UpdateSpotLights(m_t, catmul);
 
 	// Update Shots
 	UpdateShots(deltaTime, m_t, catmul);
@@ -218,22 +220,26 @@ void Hero::UpdateShots(float deltaTime, float m_t, CCatmullRom &catmul)
 // Initialise Spotlights to arbitary position 
 void Hero::InitialiseSpotLights()
 {
+	float gValue = 0.f;
 	for (int i = 0; i < spotLightCount; i++)
 	{
-		spotLights.push_back(new LightInfo(glm::vec4(1), glm::vec3(0.9f, 0.9f, 0.9f), glm::vec3(0.f, 1.f, 0.f), glm::vec3(1.f, 0.f, 0.f), glm::vec3(0, -1, 0), 1.f, 10.f));
+		spotLights.push_back(new LightInfo(glm::vec4(1), glm::vec3(1), glm::vec3(0.5f, 1.f, 0.f), glm::vec3(1.f, 0.5f, 0.f), glm::vec3(1), 150.f, 10.f));
+		gValue += 1.0f / spotLightCount;
 	}
 }
 
 // Update spotlights based on player position
-void Hero::UpdateSpotLights()
+void Hero::UpdateSpotLights(float m_t, CCatmullRom &catmul)
 {
+	Position position = Position();
 	float j = 0;
 	for (int i = 0; i < spotLights.size(); i++)
 	{
-		glm::vec3 pos = position._point - position._B * 100.f + position._T * j;
+		catmul.SuperTNBMaker(position, rotationAngle, radialDistance - 200, m_t + j);
+		// glm::vec3 pos = position._point - position._B * 100.f + position._T * j;
 
-		spotLights[i]->_position = glm::vec4(pos, 1);
-		spotLights[i]->_direction = (position._point + position._T * j) - pos;
+		spotLights[i]->_position = glm::vec4(position._point, 1);
+		spotLights[i]->_direction = - position._B; // (position._point + position._T * j) - pos;
 
 		j += distanceBetweenSpotLights;
 	}

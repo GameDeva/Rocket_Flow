@@ -32,6 +32,7 @@ public:
 	glm::vec3 positionAtAngle(Position &position, float angleInRad, float radius);
 	void UpdatePositionToEdge(glm::vec3 newPoint, Position &position);
 
+	void PerlinateOffsetPoints();
 
 private:
 
@@ -43,8 +44,8 @@ private:
 	void UniformlySampleControlPoints(int numSamples);
 	glm::vec3 Interpolate(glm::vec3 &p0, glm::vec3 &p1, glm::vec3 &p2, glm::vec3 &p3, float t);
 
-	const static int trackSampleSize = 300; // Sample size of points on the track to interpolate between the fixed control points
-	const static int curveSampleSize = 16; // Number of vertices on polygon shape of the track
+	const static int trackSampleSize = 1000; // Sample size of points on the track to interpolate between the fixed control points
+	const static int curveSampleSize = 128; // Number of vertices on polygon shape of the track
 
 	vector<float> m_distances;
 	CTexture m_texture;
@@ -68,7 +69,6 @@ private:
 	vector<glm::vec3> p;
 	vector<glm::vec2> s;
 	vector<glm::vec3> n;
-
 
 	float trackWidth;
 

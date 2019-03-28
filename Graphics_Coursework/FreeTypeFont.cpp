@@ -117,6 +117,7 @@ bool CFreeTypeFont::LoadSystemFont(string name, int ipixelSize)
 {
 	char buf[512]; GetWindowsDirectory(buf, 512);
 	string sPath = buf;
+	// string sPath = "C:\\Users\\peria\\AppData\\Local\\Microsoft\\Windows\\Fonts\\";
 	sPath += "\\Fonts\\";
 	sPath += name;
 

@@ -30,7 +30,6 @@ Source code drawn from a number of sources and examples, including contributions
 #include "Shaders.h"
 #include "FreeTypeFont.h"
 #include "Sphere.h"
-#include "MatrixStack.h"
 #include "OpenAssetImportMesh.h"
 #include "Audio.h"
 #include "CCatmullRom.h"
@@ -131,6 +130,7 @@ void Game::Initialise()
 	vector<CShader> shShaders;
 	vector<string> sShaderFileNames;
 	sShaderFileNames.push_back("mainShader.vert");
+	sShaderFileNames.push_back("mainShader.geom");
 	sShaderFileNames.push_back("mainShader.frag");
 	sShaderFileNames.push_back("textShader.vert");
 	sShaderFileNames.push_back("textShader.frag");
@@ -155,25 +155,27 @@ void Game::Initialise()
 	pMainProgram->CreateProgram();
 	pMainProgram->AddShaderToProgram(&shShaders[0]);
 	pMainProgram->AddShaderToProgram(&shShaders[1]);
+	pMainProgram->AddShaderToProgram(&shShaders[2]);
 	pMainProgram->LinkProgram();
 	m_pShaderPrograms->push_back(pMainProgram);
 
 	// Create a shader program for fonts
 	CShaderProgram *pFontProgram = new CShaderProgram;
 	pFontProgram->CreateProgram();
-	pFontProgram->AddShaderToProgram(&shShaders[2]);
 	pFontProgram->AddShaderToProgram(&shShaders[3]);
+	pFontProgram->AddShaderToProgram(&shShaders[4]);
 	pFontProgram->LinkProgram();
 	m_pShaderPrograms->push_back(pFontProgram);
 
 	// Create a shader program for Water
 	CShaderProgram *pCircularWaterProgram = new CShaderProgram;
 	pCircularWaterProgram->CreateProgram();
-	pCircularWaterProgram->AddShaderToProgram(&shShaders[4]);
 	pCircularWaterProgram->AddShaderToProgram(&shShaders[5]);
+	pCircularWaterProgram->AddShaderToProgram(&shShaders[6]);
 	pCircularWaterProgram->LinkProgram();
 	m_pShaderPrograms->push_back(pCircularWaterProgram);
 
+	perlin_t = 0.f;
 	// Spline work
 	m_t = 0.0f;
 	m_catmull->CreateCentreline();
@@ -193,7 +195,7 @@ void Game::Initialise()
 	// Create the planar terrain
 	m_pPlanarTerrain->Create("resources\\textures\\", "Tile41a.jpg", 2000.0f, 2000.0f, 50.0f); // Texture downloaded from http://www.psionicgames.com/?page_id=26 on 24 Jan 2013
 
-	m_pFtFont->LoadSystemFont("arial.ttf", 32);
+	m_pFtFont->LoadSystemFont("bahnschrift.ttf", 128);
 	m_pFtFont->SetShaderProgram(pFontProgram);
 
 	// Load some meshes in OBJ format
@@ -326,13 +328,14 @@ void Game::Render()
 	// Use the main shader program 
 	CShaderProgram *pMainProgram = (*m_pShaderPrograms)[0];
 	pMainProgram->UseProgram();
+	pMainProgram->SetUniform("bExplodeObject", false);
+	pMainProgram->SetUniform("explodeFactor", 0.f);
 	pMainProgram->SetUniform("bUseTexture", true);
 	pMainProgram->SetUniform("sampler0", 0);
 	// Note: cubemap and non-cubemap textures should not be mixed in the same texture unit.  Setting unit 10 to be a cubemap texture.
 	int cubeMapTextureUnit = 10; 
 	pMainProgram->SetUniform("CubeMapTex", cubeMapTextureUnit);
 	
-
 	// Set the projection matrix
 	pMainProgram->SetUniform("matrices.projMatrix", m_pcamera->GetPerspectiveProjectionMatrix());
 
@@ -356,15 +359,16 @@ void Game::Render()
 				AddLight(pMainProgram, to_string(i), viewMatrix, viewNormalMatrix, *spotLights[i]);
 			}
 		}
-		//pMainProgram->SetUniform("dayLight.position", viewMatrix * m_phero->dayLight->_position); // Position of light source *in eye coordinates*
-		//pMainProgram->SetUniform("dayLight.La", m_phero->dayLight->_lightAmb);		// Ambient colour of light
-		//pMainProgram->SetUniform("dayLight.Ld", m_phero->dayLight->_lightDiff);		// Diffuse colour of light
-		//pMainProgram->SetUniform("dayLight.Ls", m_phero->dayLight->_lightSpec);		// Specular colour of light
-		//pMainProgram->SetUniform("dayLight.direction", glm::normalize(viewNormalMatrix*m_phero->dayLight->_direction));		// Direction of spot light
-		//pMainProgram->SetUniform("dayLight.exponent", m_phero->dayLight->_exponent);		// Exponent of spot light
-		//pMainProgram->SetUniform("dayLight.cutoff", m_phero->dayLight->_cutoff);		// Cutoff of spot light
 
-		pMainProgram->SetUniform("material1.Ma", glm::vec3(0.f));	// Ambient material reflectance
+		pMainProgram->SetUniform("nightLight.position", viewMatrix * m_phero->nightLight->_position); // Position of light source *in eye coordinates*
+		pMainProgram->SetUniform("nightLight.La", m_phero->nightLight->_lightAmb);		// Ambient colour of light
+		pMainProgram->SetUniform("nightLight.Ld", m_phero->nightLight->_lightDiff);		// Diffuse colour of light
+		pMainProgram->SetUniform("nightLight.Ls", m_phero->nightLight->_lightSpec);		// Specular colour of light
+		pMainProgram->SetUniform("nightLight.direction", glm::normalize(viewNormalMatrix*m_phero->nightLight->_direction));		// Direction of spot light
+		pMainProgram->SetUniform("nightLight.exponent", m_phero->nightLight->_exponent);		// Exponent of spot light
+		pMainProgram->SetUniform("nightLight.cutoff", m_phero->nightLight->_cutoff);		// Cutoff of spot light
+
+		pMainProgram->SetUniform("material1.Ma", glm::vec3(0.5f));	// Ambient material reflectance
 		pMainProgram->SetUniform("material1.Md", glm::vec3(0.5f));	// Diffuse material reflectance
 		pMainProgram->SetUniform("material1.Ms", glm::vec3(0.5f));	// Specular material reflectance
 		pMainProgram->SetUniform("material1.shininess", 15.0f);		// Shininess material property
@@ -388,25 +392,20 @@ void Game::Render()
 
 	}
 
-	if (nightMode)
-	{
-		vector<LightInfo*> spotLights = m_phero->getspotLights();
-		if (spotLights.size() != 0)
-		{
-			for (int i = 0; i < spotLights.size(); i++)
-			{
-				modelViewMatrixStack.Push();
-				modelViewMatrixStack.Translate(glm::vec3(spotLights[i]->_position));
-				modelViewMatrixStack.Scale(1.5f);
-				pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
-				pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-				m_pGemTetra->Render();
-				modelViewMatrixStack.Pop();
-
-			}
-		}
-	}
-
+	//if (nightMode)
+	//{
+	//	vector<LightInfo*> spotLights = m_phero->getspotLights();
+	//	if (spotLights.size() != 0)
+	//	{
+	//		for (int i = 0; i < spotLights.size(); i++)
+	//		{
+	//			modelViewMatrixStack.Push();
+	//			modelViewMatrixStack.Translate(glm::vec3(spotLights[i]->_position));
+	//			modelViewMatrixStack.Scale(1.5f);
+	//			pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+	//			pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+	//			m_pGemTetra->Render();
+	//			modelViewMatrixStack.Pop();
 
 	// Render the skybox and terrain with full ambient reflectance 
 	modelViewMatrixStack.Push();
@@ -531,18 +530,18 @@ void Game::Render()
 
 	}
 
+	// Game::Display3DText(m_phero->position._point, modelViewMatrixStack);
 
+	//// Spline Render
+	//modelViewMatrixStack.Push();
+	//pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+	//pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+	//// m_catmull->RenderCentreline();
+	//// m_catmull->RenderOffsetCurves();
+	//m_catmull->RenderTrack();
+	//modelViewMatrixStack.Pop();
 
-	// Spline Render
-	modelViewMatrixStack.Push();
-	pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
-	pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-	// m_catmull->RenderCentreline();
-	// m_catmull->RenderOffsetCurves();
-	m_catmull->RenderTrack();
-	modelViewMatrixStack.Pop();
-
-	// RenderWater();
+	RenderWater();
 
 	// Draw the 2D graphics after the 3D graphics
 	DisplayHUD();
@@ -648,16 +647,39 @@ void Game::DisplayHUD()
 	glDisable(GL_DEPTH_TEST);
 	fontProgram->SetUniform("matrices.modelViewMatrix", glm::mat4(1));
 	fontProgram->SetUniform("matrices.projMatrix", m_pcamera->GetOrthographicProjectionMatrix());
-	fontProgram->SetUniform("vColour", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-	m_pFtFont->Render(20, 20, 20, "Crates Destroyed: %d", m_phero->cratesDestroyed);
-	m_pFtFont->Render(20, 40, 20, "Fireball Stack: %d", m_phero->currentShotsRemaining);
+	
+	if(nightMode)
+		fontProgram->SetUniform("vColour", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	else 
+		fontProgram->SetUniform("vColour", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
-	m_pFtFont->Render(20, 60, 20, "HEALHT: %d", m_phero->currentHealth);
+	m_pFtFont->Render(m_gameWindow.SCREEN_WIDTH - 240, height - 40, 20, "Crates Destroyed: %d", m_phero->cratesDestroyed);
+	
+	m_pFtFont->Render(21, 40, 20, "Fireball Stack: %d", m_phero->currentShotsRemaining);
+	m_pFtFont->Render(20, 70, 40, "HEALTH: %d", m_phero->currentHealth);
 
 
 
 	// Frame rate
 	DisplayFrameRate();
+}
+
+void Game::Display3DText(glm::vec3 q, glutil::MatrixStack modelViewMatrixStack)
+{
+	GLint viewport[4];
+	glGetIntegerv(GL_VIEWPORT, viewport); 
+	glm::vec4 vp(viewport[0], viewport[1], viewport[2], viewport[3]);
+	glm::vec3 p = glm::project(q, modelViewMatrixStack.Top(), *(m_pcamera->GetPerspectiveProjectionMatrix()), vp);
+	GLfloat depth; glReadPixels((int)p.x, (int)p.y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth); 
+	float offset = 0.001f; 
+	if (p.z - offset < depth) 
+	{ 
+		CShaderProgram*fontProgram = (*m_pShaderPrograms)[1]; 
+		fontProgram->UseProgram(); fontProgram->SetUniform("matrices.modelViewMatrix", glm::mat4(1)); 
+		fontProgram->SetUniform("matrices.projMatrix", m_pcamera->GetOrthographicProjectionMatrix()); 
+		fontProgram->SetUniform("vColour", glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)); 
+		m_pFtFont->Render(p.x, p.y, 100, "hi"); 
+	}
 }
 
 void Game::DisplayFrameRate()
@@ -688,8 +710,8 @@ void Game::DisplayFrameRate()
 		glDisable(GL_DEPTH_TEST);
 		fontProgram->SetUniform("matrices.modelViewMatrix", glm::mat4(1));
 		fontProgram->SetUniform("matrices.projMatrix", m_pcamera->GetOrthographicProjectionMatrix());
-		fontProgram->SetUniform("vColour", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-		m_pFtFont->Render(20, height - 20, 20, "FPS: %d", m_framesPerSecond);
+		fontProgram->SetUniform("vColour", glm::vec4(0.1f, 0.9f, 0.0f, 1.0f));
+		m_pFtFont->Render(20, height - 15, 17, "FPS: %d", m_framesPerSecond);
 	}
 }
 
@@ -699,8 +721,7 @@ void Game::RenderWater()
 	glutil::MatrixStack modelViewMatrixStack;
 	modelViewMatrixStack.SetIdentity();
 
-
-	CShaderProgram *circularWaterProgram = (*m_pShaderPrograms)[0];
+	CShaderProgram *circularWaterProgram = (*m_pShaderPrograms)[2];
 
 	circularWaterProgram->UseProgram();
 
@@ -716,21 +737,58 @@ void Game::RenderWater()
 	glm::mat4 viewMatrix = modelViewMatrixStack.Top();
 	glm::mat3 viewNormalMatrix = m_pcamera->ComputeNormalMatrix(viewMatrix);
 
-	// Set light and materials in main shader program
-	glm::vec4 lightPosition1 = glm::vec4(-100, 100, -100, 1); // Position of light source *in world coordinates*
-	circularWaterProgram->SetUniform("light1.position", viewMatrix*lightPosition1); // Position of light source *in eye coordinates*
-	circularWaterProgram->SetUniform("light1.La", glm::vec3(1));		// Ambient colour of light
-	circularWaterProgram->SetUniform("light1.Ld", glm::vec3(1));		// Diffuse colour of light
-	circularWaterProgram->SetUniform("light1.Ls", glm::vec3(1));		// Specular colour of light
-	circularWaterProgram->SetUniform("light1.direction", glm::normalize(viewNormalMatrix*glm::vec3(0, -1, 0)));		// Direction of spot light
-	circularWaterProgram->SetUniform("light1.exponent", 2.f);		// Exponent of spot light
-	circularWaterProgram->SetUniform("light1.cutoff", 0.1f);		// Cutoff of spot light
 
+	circularWaterProgram->SetUniform("nightMode", nightMode);
+	if (nightMode)
+	{
+		circularWaterProgram->SetUniform("lightCount", m_phero->spotLightCount);
 
-	circularWaterProgram->SetUniform("material1.Ma", glm::vec3(1.0f));	// Ambient material reflectance
-	circularWaterProgram->SetUniform("material1.Md", glm::vec3(0.0f));	// Diffuse material reflectance
-	circularWaterProgram->SetUniform("material1.Ms", glm::vec3(0.0f));	// Specular material reflectance
-	circularWaterProgram->SetUniform("material1.shininess", 15.0f);		// Shininess material property
+		// Initalise all lights
+		vector<LightInfo*> spotLights = m_phero->getspotLights();
+		if (spotLights.size() != 0)
+		{
+			for (int i = 0; i < spotLights.size(); i++)
+			{
+				AddLight(circularWaterProgram, to_string(i), viewMatrix, viewNormalMatrix, *spotLights[i]);
+			}
+		}
+
+		circularWaterProgram->SetUniform("nightLight.position", viewMatrix * m_phero->nightLight->_position); // Position of light source *in eye coordinates*
+		circularWaterProgram->SetUniform("nightLight.La", m_phero->nightLight->_lightAmb);		// Ambient colour of light
+		circularWaterProgram->SetUniform("nightLight.Ld", m_phero->nightLight->_lightDiff);		// Diffuse colour of light
+		circularWaterProgram->SetUniform("nightLight.Ls", m_phero->nightLight->_lightSpec);		// Specular colour of light
+		circularWaterProgram->SetUniform("nightLight.direction", glm::normalize(viewNormalMatrix*m_phero->nightLight->_direction));		// Direction of spot light
+		circularWaterProgram->SetUniform("nightLight.exponent", m_phero->nightLight->_exponent);		// Exponent of spot light
+		circularWaterProgram->SetUniform("nightLight.cutoff", m_phero->nightLight->_cutoff);		// Cutoff of spot light
+
+		circularWaterProgram->SetUniform("material1.Ma", glm::vec3(0.5f));	// Ambient material reflectance
+		circularWaterProgram->SetUniform("material1.Md", glm::vec3(0.5f));	// Diffuse material reflectance
+		circularWaterProgram->SetUniform("material1.Ms", glm::vec3(0.5f));	// Specular material reflectance
+		circularWaterProgram->SetUniform("material1.shininess", 15.0f);		// Shininess material property
+
+	}
+	else {
+		// AddLight(pMainProgram, to_string(0), viewMatrix, viewNormalMatrix, *m_phero->dayLight);
+
+		circularWaterProgram->SetUniform("dayLight.position", viewMatrix * m_phero->dayLight->_position); // Position of light source *in eye coordinates*
+		circularWaterProgram->SetUniform("dayLight.La", m_phero->dayLight->_lightAmb);		// Ambient colour of light
+		circularWaterProgram->SetUniform("dayLight.Ld", m_phero->dayLight->_lightDiff);		// Diffuse colour of light
+		circularWaterProgram->SetUniform("dayLight.Ls", m_phero->dayLight->_lightSpec);		// Specular colour of light
+		circularWaterProgram->SetUniform("dayLight.direction", glm::normalize(viewNormalMatrix*m_phero->dayLight->_direction));		// Direction of spot light
+		circularWaterProgram->SetUniform("dayLight.exponent", m_phero->dayLight->_exponent);		// Exponent of spot light
+		circularWaterProgram->SetUniform("dayLight.cutoff", m_phero->dayLight->_cutoff);		// Cutoff of spot light
+
+		circularWaterProgram->SetUniform("material1.Ma", glm::vec3(1.f));	// Ambient material reflectance
+		circularWaterProgram->SetUniform("material1.Md", glm::vec3(0.5f));	// Diffuse material reflectance
+		circularWaterProgram->SetUniform("material1.Ms", glm::vec3(0.5f));	// Specular material reflectance	
+		circularWaterProgram->SetUniform("material1.shininess", 15.0f);		// Shininess material property
+
+	}
+
+	perlin_t += 0.001f* (float)deltaTime;
+	// float t = sin(perlin_t);
+	circularWaterProgram->SetUniform("timePassed", perlin_t);
+	// circularWaterProgram->SetUniform("nightMode", nightMode);
 
 	// Spline Render
 	modelViewMatrixStack.Push();

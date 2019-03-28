@@ -3,6 +3,8 @@
 #include "Common.h"
 #include "GameWindow.h"
 
+#include "MatrixStack.h"
+
 // Classes used in game.  For a new class, declare it here and provide a pointer to an object of this class below.  Then, in Game.cpp, 
 // include the header.  In the Game constructor, set the pointer to NULL and in Game::Initialise, create a new object.  Don't forget to 
 // delete the object in the destructor.   
@@ -76,12 +78,14 @@ private:
 	static const int FPS = 60;
 	void DisplayFrameRate();
 	void DisplayHUD();
+	void Display3DText(glm::vec3 q, glutil::MatrixStack modelViewMatrixStack);
 	void GameLoop();
 	GameWindow m_gameWindow;
 	HINSTANCE m_hInstance;
 	int m_frameCount;
 	double m_elapsedTime;
 	float m_t;
+	float perlin_t;
 
 	const float timeBetweenNightToggle = 0.5f;
 	float currentNightToggleTimer = 0.f;
