@@ -3,6 +3,11 @@
 
 Hero::Hero()
 {
+	cameraSetting = Third;
+
+	shotsAlive = vector<MovingObject*>();
+	shotsInDiscard = vector<MovingObject*>();
+
 	spotLights = vector<LightInfo*>();
 	InitialiseSpotLights();
 
@@ -10,21 +15,6 @@ Hero::Hero()
 	nightLight = new LightInfo(glm::vec4(-100, 100, -100, 1), glm::vec3(0.5), glm::vec3(0.5), glm::vec3(0.5), glm::vec3(0.f, -1.f, 0.f), 1.f, 15.f);
 
 	discard = Discard(2.f, true);
-	discard.Start();
-
-	// shotsFired = vector<Position>();
-	shotsAlive = vector<FireBall*>();
-	shotsInDiscard = vector<FireBall*>();
-
-	shouldRender = true;
-
-	// Gameplay variables
-	cratesDestroyed = 0;
-	currentHealth = maxHealth;
-	currentShotsRemaining = maxNumberOfShots;
-	invulnerable = false;
-	currentInvulnerabilityTimer = 0.f;
-
 }
 
 
@@ -61,17 +51,41 @@ Hero::~Hero()
 // Initialise hero object
 void Hero::Initialise()
 {
-	cameraSetting = Third;
+	dead = false;
+	rotationAngle = 0.f;
+	discard.Start();
+
+	// shotsFired = vector<Position>();
+	if (shotsAlive.size() != 0)
+	{
+		for (int i = 0; i < shotsAlive.size(); i++)
+		{
+			delete shotsAlive[i];
+		}
+	}
+
+	if (shotsInDiscard.size() != 0)
+	{
+		for (int i = 0; i < shotsInDiscard.size(); i++)
+		{
+			delete shotsInDiscard[i];
+		}
+	}
+
+	shouldRender = true;
+
+	// Gameplay variables
+	score = 0;
+	currentHealth = maxHealth;
+	currentShotsRemaining = maxNumberOfShots;
+	invulnerable = false;
+	currentInvulnerabilityTimer = 0.f;
 }
 
 void Hero::Update(float deltaTime, float m_t, CCatmullRom &catmul)
 {
 	// Discard into appearance
 	discard.update(deltaTime);
-	if (GetKeyState(VK_UP) & 0x80)
-	{
-		discard.Start();
-	}
 
 	// Update player movement
 	CalculateMovement(deltaTime);
@@ -170,7 +184,7 @@ void Hero::UpdateShots(float deltaTime, float m_t, CCatmullRom &catmul)
 		// Add new shot position
 		Position p = position;
 		p._point += p._T * 2.f;
-		shotsAlive.push_back(new FireBall(m_t, rotationAngle, p));
+		shotsAlive.push_back(new MovingObject(m_t, rotationAngle, p, fireBallMoveSpeed, fireBallCurvetime));
 		currentShotsRemaining--;
 		// Reset shot timer
 		currentShotTimer = 0.f;
@@ -247,7 +261,7 @@ void Hero::UpdateSpotLights(float m_t, CCatmullRom &catmul)
 
 void Hero::OnCrateDestroy()
 {
-	cratesDestroyed++;
+	score++;
 }
 
 void Hero::OnGemCollect()
@@ -261,7 +275,9 @@ void Hero::OnTakeDamage(int damageValue)
 	// Take damage if not invulnerable
 	if (!invulnerable)
 	{
-		currentHealth -= damageValue;
+		currentHealth -= 50;
+		if (currentHealth <= 0)
+			dead = true;
 		invulnerable = true;
 	}
 }

@@ -1,20 +1,26 @@
-﻿  Audio.cpp
-  Camera.cpp
-  Cubemap.cpp
-  FreeTypeFont.cpp
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(391,5): warning MSB8028: The intermediate directory (Release\) contains files shared from another project (OpenGLTemplate.vcxproj).  This can lead to incorrect clean and rebuild behavior.
   Game.cpp
-  GameWindow.cpp
-  HighResolutionTimer.cpp
-  MatrixStack.cpp
-  OpenAssetImportMesh.cpp
-  Plane.cpp
-  Shaders.cpp
-  Skybox.cpp
-  Sphere.cpp
-  Texture.cpp
-  VertexBufferObject.cpp
-  VertexBufferObjectIndexed.cpp
+c:\opengl projects\graphics_coursework\graphics_coursework\movingobject.h(26): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\movingobject.h(27): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(55): warning C4552: '-': result of expression not used
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(260): warning C4018: '<': signed/unsigned mismatch
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(528): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(539): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(540): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(543): warning C4018: '<': signed/unsigned mismatch
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(552): warning C4018: '<': signed/unsigned mismatch
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(598): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(614): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(755): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(824): warning C4018: '<': signed/unsigned mismatch
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(951): warning C4018: '<': signed/unsigned mismatch
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(972): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(978): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(979): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\opengl projects\graphics_coursework\graphics_coursework\game.cpp(991): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   Generating code
-  All 1057 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  1 of 1798 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    1 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
-  OpenGLTemplate.vcxproj -> C:\Slabaugh\Teaching\AY2016-17\INM376\Template\Template\Release\OpenGLTemplate.exe
+  OpenGLTemplate.vcxproj -> C:\OpenGl Projects\Graphics_Coursework\Release\Graphics_Coursework.exe

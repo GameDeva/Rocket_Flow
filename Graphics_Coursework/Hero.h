@@ -3,7 +3,7 @@
 #include "CCatmullRom.h"
 #include "Camera.h"
 #include "Helper.h"
-#include "FireBall.h"
+#include "MovingObject.h"
 
 class Hero
 {
@@ -26,6 +26,7 @@ public:
 	void Update(float deltaTime, float m_t, CCatmullRom &catmul);
 	void UpdateCamera(float deltaTime, CCamera &camera);
 
+	bool dead;
 	void OnTakeDamage(int damageValue);
 	void OnCrateDestroy();
 	void OnGemCollect();
@@ -45,10 +46,10 @@ public:
 	
 	Discard discard;
 	Position position;
-	int cratesDestroyed;
+	int score;
 
-	const vector<FireBall*> & getShotsAliveList() { return shotsAlive; }
-	const vector<FireBall*> & getShotsInDiscard() { return shotsInDiscard; }
+	const vector<MovingObject*> & getShotsAliveList() { return shotsAlive; }
+	const vector<MovingObject*> & getShotsInDiscard() { return shotsInDiscard; }
 	const vector<LightInfo*> & getspotLights() { return spotLights; }
 
 	// IMPORTANT: when changing this, change size of array in mainShader.frag, since array cannot be dynamic
@@ -79,14 +80,17 @@ private:
 	vector<LightInfo*> spotLights;
 
 	// Shots related
-	vector<FireBall *> shotsAlive;
-	vector<FireBall *> shotsInDiscard;
+	vector<MovingObject *> shotsAlive;
+	vector<MovingObject *> shotsInDiscard;
 
 	float shotTimeBeforeDecay = 1.f;
 	float shotTimeForDiscardEffect = 1.5f; // Includes timebeforedecay
 
 	float currentShotTimer = 0.f;
 	float timeBetweenShots = 0.2f; // Time between key presses to shoot
+	
+	const float fireBallMoveSpeed = 2.f;
+	const float fireBallCurvetime = 0.2f;
 	//
 
 	bool invulnerable;
@@ -100,5 +104,6 @@ private:
 	const float distanceBetweenSpotLights = 40.f;
 	void InitialiseSpotLights();
 	void UpdateSpotLights(float m_t, CCatmullRom &catmul);
+
 };
 

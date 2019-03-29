@@ -81,5 +81,7 @@ struct LightInfo
 
 };
 
+enum GameState { START, GAMEPLAY, WIN, LOSE };
+
 
 const float pi = 3.14159f;

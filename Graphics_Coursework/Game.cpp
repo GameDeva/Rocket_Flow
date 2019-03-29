@@ -110,17 +110,12 @@ void Game::Initialise()
 	m_phero = new Hero;
 	m_pcamera = new CCamera;
 	m_enemyShip = new COpenAssetImportMesh;
-
+	
 	RECT dimensions = m_gameWindow.GetDimensions();
 	// m_gameWindow.SetFullscreen();
 
 	int width = dimensions.right - dimensions.left;
 	int height = dimensions.bottom - dimensions.top;
-
-	// Object work
-	//m_t = 0.f;
-	//m_spaceShipPosition = glm::vec3(0.f, 0.f, 0.f);
-	//m_spaceShipOrientation = glm::mat4(1.f);
 
 	// Set the orthographic and perspective projection matrices based on the image size
 	m_pcamera->SetOrthographicProjectionMatrix(width, height); 
@@ -175,9 +170,7 @@ void Game::Initialise()
 	pCircularWaterProgram->LinkProgram();
 	m_pShaderPrograms->push_back(pCircularWaterProgram);
 
-	perlin_t = 0.f;
 	// Spline work
-	m_t = 0.0f;
 	m_catmull->CreateCentreline();
 	m_catmull->CreateOffsetCurves();
 	m_catmull->CreateTrack();
@@ -195,7 +188,7 @@ void Game::Initialise()
 	// Create the planar terrain
 	m_pPlanarTerrain->Create("resources\\textures\\", "Tile41a.jpg", 2000.0f, 2000.0f, 50.0f); // Texture downloaded from http://www.psionicgames.com/?page_id=26 on 24 Jan 2013
 
-	m_pFtFont->LoadSystemFont("bahnschrift.ttf", 128);
+	m_pFtFont->LoadSystemFont("consola.ttf", 128);
 	m_pFtFont->SetShaderProgram(pFontProgram);
 
 	// Load some meshes in OBJ format
@@ -212,106 +205,16 @@ void Game::Initialise()
 	m_pAudio->LoadEventSound("Resources\\Audio\\Boing.wav");					// Royalty free sound from freesound.org
 	m_pAudio->LoadMusicStream("Resources\\Audio\\Dreams_Instru.mp3");	// J Cole - Dreams Instrumental
 	m_pAudio->PlayMusicStream();
+	
+	// Create list of enemies
+	enemiesAlive = vector<MovingObject*>();
 
-	// Enemy list
-	enemyPositions = vector<FireBall*>();
+	// After all the things are done, which don't need to be done on game restart
+	// Set up the level to start the game
+	SetupLevel();
+	SetTitleScreen();
 
-	// Gem
-	int i = 0;
-	int incrementer = 1000;
-	for (int j = 0; j < 50; j++) {
-		gemPositions.push_back(Position());
-		// SuperTNBMaker(gemPositions[j], j, 0.f);
-
-		m_catmull->TNBAtSamplePoint(i, gemPositions[j]);
-		glm::vec3 newPoint = m_catmull->positionAtAngle(gemPositions[j], 0.f + (pi / 4.f), (trackWidth / 2) + 3);
-		m_catmull->UpdatePositionToEdge(newPoint, gemPositions[j]);
-
-		i += incrementer;
-	}
-	i = 0;
-	for (int j = 0; j < 50; j++) {
-		gemPositions.push_back(Position());
-		// SuperTNBMaker(cratePositions[j], i, 0.f);
-
-		m_catmull->TNBAtSamplePoint(i, gemPositions[50 + j]);
-		glm::vec3 newPoint = m_catmull->positionAtAngle(gemPositions[50 + j], pi / 2.f + (pi / 4.f), (trackWidth / 2) + 3);
-		m_catmull->UpdatePositionToEdge(newPoint, gemPositions[50 + j]);
-
-		i += incrementer;
-	}
-	for (int j = 0; j < 50; j++) {
-		gemPositions.push_back(Position());
-		// SuperTNBMaker(cratePositions[j], i, 0.f);
-
-		m_catmull->TNBAtSamplePoint(i, gemPositions[100 + j]);
-		glm::vec3 newPoint = m_catmull->positionAtAngle(gemPositions[100 + j], pi + (pi / 4.f), (trackWidth / 2) + 3);
-		m_catmull->UpdatePositionToEdge(newPoint, gemPositions[100 + j]);
-
-		i += incrementer;
-	}
-	i = 0;
-	for (int j = 0; j < 50; j++) {
-		gemPositions.push_back(Position());
-		// SuperTNBMaker(cratePositions[j], i, 0.f);
-
-		m_catmull->TNBAtSamplePoint(i, gemPositions[150 + j]);
-		glm::vec3 newPoint = m_catmull->positionAtAngle(gemPositions[150 + j], pi + ((3*pi) / 4.f) + (pi / 4.f), (trackWidth / 2) + 3);
-		m_catmull->UpdatePositionToEdge(newPoint, gemPositions[150 + j]);
-
-		i += incrementer;
-	}
-
-
-	// Crate
-	i = 0;
-	incrementer = 1000;
-	for (int j = 0; j < 50; j++) {
-		cratePositions.push_back(Position());
-		// SuperTNBMaker(cratePositions[j], i, 0.f);
-
-		m_catmull->TNBAtSamplePoint(i, cratePositions[j]);
-		glm::vec3 newPoint = m_catmull->positionAtAngle(cratePositions[j], 0.f, (trackWidth / 2) + 3);
-		m_catmull->UpdatePositionToEdge(newPoint, cratePositions[j]);
-
-		i += incrementer;
-	}
-	i = 0;
-	for (int j = 0; j < 50; j++) {
-		cratePositions.push_back(Position());
-		// SuperTNBMaker(cratePositions[j], i, 0.f);
-
-		m_catmull->TNBAtSamplePoint(i, cratePositions[50 + j]);
-		glm::vec3 newPoint = m_catmull->positionAtAngle(cratePositions[50 + j], pi / 2.f, (trackWidth / 2) + 3);
-		m_catmull->UpdatePositionToEdge(newPoint, cratePositions[50 + j]);
-
-		i += incrementer;
-	}
-	i = 0;
-	for (int j = 0; j < 50; j++) {
-		cratePositions.push_back(Position());
-		// SuperTNBMaker(cratePositions[j], i, 0.f);
-
-		m_catmull->TNBAtSamplePoint(i, cratePositions[100 + j]);
-		glm::vec3 newPoint = m_catmull->positionAtAngle(cratePositions[100 + j], pi, (trackWidth / 2) + 3);
-		m_catmull->UpdatePositionToEdge(newPoint, cratePositions[100 + j]);
-
-		i += incrementer;
-	}
-	i = 0;
-	for (int j = 0; j < 50; j++) {
-		cratePositions.push_back(Position());
-		// SuperTNBMaker(cratePositions[j], i, 0.f);
-
-		m_catmull->TNBAtSamplePoint(i, cratePositions[150 + j]);
-		glm::vec3 newPoint = m_catmull->positionAtAngle(cratePositions[150 + j], pi + (pi / 2.f), (trackWidth / 2) + 3);
-		m_catmull->UpdatePositionToEdge(newPoint, cratePositions[150 + j]);
-
-		i += incrementer;
-	}
-
-	m_phero->Initialise();
-
+	state = START;
 }
 
 // Render method runs repeatedly in a loop
@@ -391,22 +294,7 @@ void Game::Render()
 		pMainProgram->SetUniform("material1.shininess", 15.0f);		// Shininess material property
 
 	}
-
-	//if (nightMode)
-	//{
-	//	vector<LightInfo*> spotLights = m_phero->getspotLights();
-	//	if (spotLights.size() != 0)
-	//	{
-	//		for (int i = 0; i < spotLights.size(); i++)
-	//		{
-	//			modelViewMatrixStack.Push();
-	//			modelViewMatrixStack.Translate(glm::vec3(spotLights[i]->_position));
-	//			modelViewMatrixStack.Scale(1.5f);
-	//			pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
-	//			pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-	//			m_pGemTetra->Render();
-	//			modelViewMatrixStack.Pop();
-
+	
 	// Render the skybox and terrain with full ambient reflectance 
 	modelViewMatrixStack.Push();
 		pMainProgram->SetUniform("renderSkybox", true);
@@ -426,7 +314,8 @@ void Game::Render()
 		m_pPlanarTerrain->Render();
 	modelViewMatrixStack.Pop();
 */
-	// Render the Cubes
+
+	// Render the crate
 	int size = cratePositions.size();
 	for(int i = 0; i < size; i++) 
 	{
@@ -435,14 +324,14 @@ void Game::Render()
 		modelViewMatrixStack *= cratePositions[i].getOrientation();
 		modelViewMatrixStack.Rotate(cratePositions[i]._N, m_t);
 		modelViewMatrixStack.Rotate(cratePositions[i]._T, m_t);
-		modelViewMatrixStack.Scale(3.f);
+		modelViewMatrixStack.Scale(crateRenderSize);
 		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 		pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
 		m_pCube->Render();
 		modelViewMatrixStack.Pop();
 	}
-
-	// Tetrahedron
+	
+	// Gem positions
 	size = gemPositions.size();
 	for (int i = 0; i < size; i++)
 	{
@@ -451,11 +340,31 @@ void Game::Render()
 		modelViewMatrixStack *= gemPositions[i].getOrientation();
 		modelViewMatrixStack.Rotate(gemPositions[i]._N, m_t);
 		modelViewMatrixStack.Rotate(gemPositions[i]._T, m_t);
-		modelViewMatrixStack.Scale(0.01f);
+		modelViewMatrixStack.Scale(gemRenderSize);
 		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 		pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-		m_enemyShip->Render();
+		m_pGemTetra->Render();
 		modelViewMatrixStack.Pop();
+	}
+
+	// Enemy positions
+	if (enemiesAlive.size() != 0)
+	{
+		for (vector<MovingObject*>::iterator it = enemiesAlive.begin(); it != enemiesAlive.end();)
+		{
+			modelViewMatrixStack.Push();
+			modelViewMatrixStack.Translate((*it)->_position._point);
+			modelViewMatrixStack *= (*it)->_position.getOrientation();
+			modelViewMatrixStack.Rotate(glm::vec3(0, 0, 1), 180.f);
+			modelViewMatrixStack.Rotate(glm::vec3(1, 0, 0), 90.f);
+			modelViewMatrixStack.Scale(enemyRenderSize);
+			pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+			pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+			m_enemyShip->Render();
+			modelViewMatrixStack.Pop();
+
+			++it;
+		}
 	}
 
 	//  The space ship
@@ -473,7 +382,7 @@ void Game::Render()
 		// modelViewMatrixStack.Rotate(glm::vec3(0, 1, 0), 180.f);
 		modelViewMatrixStack.Rotate(glm::vec3(0, 0, 1), 180.f);
 		modelViewMatrixStack.Rotate(glm::vec3(1, 0, 0), 180.f);
-		modelViewMatrixStack.Scale(0.03f);
+		modelViewMatrixStack.Scale(heroShipRenderSize);
 		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 		pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
 		m_pBugShipMesh->Render();
@@ -482,15 +391,15 @@ void Game::Render()
 		pMainProgram->SetUniform("applyDiscard", false);
 	}
 
-	vector<FireBall*> shotsAliveList = m_phero->getShotsAliveList();
+	vector<MovingObject*> shotsAliveList = m_phero->getShotsAliveList();
 	if (shotsAliveList.size() != 0)
 	{
-		for (vector<FireBall*>::iterator it = shotsAliveList.begin(); it != shotsAliveList.end();)
+		for (vector<MovingObject*>::iterator it = shotsAliveList.begin(); it != shotsAliveList.end();)
 		{
 			modelViewMatrixStack.Push();
 			modelViewMatrixStack.Translate((*it)->_position._point);
 			modelViewMatrixStack *= (*it)->_position.getOrientation();
-			modelViewMatrixStack.Scale(2.f);
+			modelViewMatrixStack.Scale(fireBallRenderSize);
 			pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 			pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
 			m_pSphere->Render();
@@ -500,12 +409,12 @@ void Game::Render()
 		}
 	}
 
-	vector<FireBall*> shotsDiscardList = m_phero->getShotsInDiscard();
+	vector<MovingObject*> shotsDiscardList = m_phero->getShotsInDiscard();
 	if (shotsDiscardList.size() != 0)
 	{
 		pMainProgram->SetUniform("applyDiscard", true);
 
-		for (vector<FireBall*>::iterator it = shotsDiscardList.begin(); it != shotsDiscardList.end();)
+		for (vector<MovingObject*>::iterator it = shotsDiscardList.begin(); it != shotsDiscardList.end();)
 		{
 			// Do not render discard shots that have completed discarding
 			if (!(*it)->discard.shouldDiscard) {
@@ -518,7 +427,7 @@ void Game::Render()
 			modelViewMatrixStack.Push();
 			modelViewMatrixStack.Translate((*it)->_position._point);
 			modelViewMatrixStack *= (*it)->_position.getOrientation();
-			modelViewMatrixStack.Scale(2.f);
+			modelViewMatrixStack.Scale(fireBallRenderSize);
 			pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 			pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
 			m_pSphere->Render();
@@ -527,24 +436,77 @@ void Game::Render()
 			++it;
 		}
 		pMainProgram->SetUniform("applyDiscard", false);
-
 	}
 
-	// Game::Display3DText(m_phero->position._point, modelViewMatrixStack);
+	// Render exploding objects
+	pMainProgram->SetUniform("bExplodeObject", true);
+	if (explodingCratePositionTimes.size() != 0)
+	{
+		int size = explodingCratePositionTimes.size();
+		for (int i = 0; i < size; i++)
+		{
+			pMainProgram->SetUniform("explodeFactor", explodingCratePositionTimes[i].second);
+			modelViewMatrixStack.Push();
+			modelViewMatrixStack.Translate(explodingCratePositionTimes[i].first._point);
+			modelViewMatrixStack *= explodingCratePositionTimes[i].first.getOrientation();
+			modelViewMatrixStack.Scale(crateRenderSize);
+			pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+			pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+			m_pSphere->Render();
+			modelViewMatrixStack.Pop();
+		}
+	}
+	if (explodingEnemyPositionTimes.size() != 0)
+	{
+		int size = explodingEnemyPositionTimes.size();
+		for (int i = 0; i < size; i++)
+		{
+			pMainProgram->SetUniform("explodeFactor", explodingEnemyPositionTimes[i].second);
+			modelViewMatrixStack.Push();
+			modelViewMatrixStack.Translate(explodingEnemyPositionTimes[i].first._point);
+			modelViewMatrixStack *= explodingEnemyPositionTimes[i].first.getOrientation();
+			modelViewMatrixStack.Scale(enemyRenderSize);
+			pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+			pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+			m_pSphere->Render();
+			modelViewMatrixStack.Pop();
+		}
+	}
+	pMainProgram->SetUniform("bExplodeObject", false);
 
-	//// Spline Render
-	//modelViewMatrixStack.Push();
-	//pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
-	//pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-	//// m_catmull->RenderCentreline();
-	//// m_catmull->RenderOffsetCurves();
-	//m_catmull->RenderTrack();
-	//modelViewMatrixStack.Pop();
+	// Spline Render
+	modelViewMatrixStack.Push();
+	pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+	pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+	// m_catmull->RenderCentreline();
+	// m_catmull->RenderOffsetCurves();
+	m_catmull->RenderTrack();
+	modelViewMatrixStack.Pop();
 
 	RenderWater();
 
-	// Draw the 2D graphics after the 3D graphics
-	DisplayHUD();
+	// Render on start screen
+	if (state == START)
+	{
+		Game::Display3DText("Rocket Flow", 150, glm::vec3(300, 30, -300), nightMode ? nightTitleColour : titleColour, modelViewMatrixStack);
+		Game::Display3DText("Space to Begin!", 40, glm::vec3(300, 0, -290), nightMode ? nightTitleColour : titleColour, modelViewMatrixStack);
+	}
+	else {
+		// Draw the 2D graphics after the 3D graphics
+		DisplayHUD();
+	}
+
+	if (state == WIN)
+	{
+		DisplayEndGameText();
+
+	}
+
+	if (state == LOSE)
+	{
+		DisplayEndGameText();
+
+	}
 
 	// Swap buffers to show the rendered image
 	SwapBuffers(m_gameWindow.Hdc());		
@@ -554,8 +516,85 @@ void Game::Render()
 // Update method runs repeatedly with the Render method
 void Game::Update() 
 {
-	// Increase sample rate 
-	m_t += m_phero->moveSpeed * 0.001f* (float)deltaTime; 
+	switch (state)
+	{
+	case START:
+		// Set camera to single position
+		if (GetKeyState(VK_SPACE) & 0x80)
+		{
+			// Begin game
+			// SetupLevel();
+			StartGame();
+			m_phero->UpdateCamera(deltaTime, *m_pcamera);
+		}
+		break;
+	case GAMEPLAY:
+		// Increase sample rate 
+		m_t += m_phero->moveSpeed * 0.001f* (float)deltaTime;
+		UpdateEnemyPositions();
+		// If hero is alive
+		if (!m_phero->dead)
+		{
+			// Update the hero
+			m_phero->Update(deltaTime, m_t, *m_catmull);
+			m_phero->UpdateCamera(deltaTime, *m_pcamera);
+
+			// Update exploding object timers
+			for (int i = 0; i < explodingCratePositionTimes.size(); i++)
+			{
+				explodingCratePositionTimes[i].second += explodeSpeed * 0.001f * (float)deltaTime;
+				if (explodingCratePositionTimes[i].second < maxExplodeTimer)
+				{
+					explodingCratePositionTimes.erase(explodingCratePositionTimes.begin() + i);
+				}
+			}
+			// Update exploding object timers
+			for (int i = 0; i < explodingEnemyPositionTimes.size(); i++)
+			{
+				explodingEnemyPositionTimes[i].second += explodeSpeed * 0.001f *  (float)deltaTime;
+				if (explodingEnemyPositionTimes[i].second < maxExplodeTimer)
+				{
+					explodingEnemyPositionTimes.erase(explodingEnemyPositionTimes.begin() + i);
+				}
+			}
+
+		}
+		else {
+			OnLoseGame();
+		}
+		break;
+	case WIN:
+		if (GetKeyState(VK_SPACE) & 0x80)
+		{
+			// Begin game
+			SetupLevel();
+			StartGame();
+		}
+		else if (GetKeyState(VK_SHIFT) & 0x80)
+		{
+			SetupLevel();
+			SetTitleScreen();
+			state = START;
+		}
+		break;
+	case LOSE:
+		if (GetKeyState(VK_SPACE) & 0x80)
+		{
+			// Begin game
+			SetupLevel();
+			StartGame();
+		}
+		else if (GetKeyState(VK_SHIFT) & 0x80)
+		{
+			SetupLevel();
+			SetTitleScreen();
+			state = START;
+		}
+		break;
+	default:
+		break;
+	}
+
 	currentNightToggleTimer += (float)deltaTime * 0.001;
 	// Night mode toggle
 	if (GetKeyState(VK_NUMPAD7) & 0x80 && currentNightToggleTimer > timeBetweenNightToggle)
@@ -564,21 +603,21 @@ void Game::Update()
 		currentNightToggleTimer = 0.f;
 	}
 
-	// Check if pass in of catmul is ok
-	m_phero->Update(deltaTime, m_t, *m_catmull);
-	m_phero->UpdateCamera(deltaTime, *m_pcamera);
-
 	m_pAudio->Update();
 }
 
 void Game::UpdateEnemyPositions()
 {
 	// Enemies
-	 for (int i = 0; i < enemyPositions.size();)
+	for (vector<MovingObject*>::iterator it = enemiesAlive.begin(); it != enemiesAlive.end(); it++)
 	{
-		enemyPositions[i]->Update(deltaTime, *m_catmull);
-		++i;
+		(*it)->Update(deltaTime, *m_catmull);
 	}
+	// for (int i = 0; i < enemyPositions.size(); i++)
+	//{
+	//	 enemyPositions[i]._point -= enemyPositions[i]._T * enemyMoveSpeed  * 0.001f * (float)deltaTime;
+	//}
+
 }
 
 void Game::CheckForCollisions()
@@ -593,20 +632,28 @@ void Game::CheckForCollisions()
 		// Check for collision with hero
 		if (glm::distance((*it)._point, heroPoint) < 5.f)
 		{
+			// Hero takes damage 
 			m_phero->OnTakeDamage(crateDamageValue);
+			// Destroyed crate is added to list of exploding crate
+			explodingCratePositionTimes.push_back(pair<Position, float>(*it, 0.f));
+			// Crate removed from this list
 			it = cratePositions.erase(it);
+
 			crateDestroyed = true;
 		}
 		else {
 			// Check for collision with each fireball alive
-			vector<FireBall*> shotsAliveList = m_phero->getShotsAliveList();
+			vector<MovingObject*> shotsAliveList = m_phero->getShotsAliveList();
 			if (shotsAliveList.size() != 0)
 			{
-				for (vector<FireBall*>::iterator ft = shotsAliveList.begin(); ft != shotsAliveList.end();)
+				for (vector<MovingObject*>::iterator ft = shotsAliveList.begin(); ft != shotsAliveList.end();)
 				{
 					if (glm::distance((*ft)->_position._point, (*it)._point) < 8.f)
 					{
 						m_phero->OnCrateDestroy();
+						// Destroyed crate is added to list of exploding crate
+						explodingCratePositionTimes.push_back(pair<Position, float>(*it, 0.f));
+						// Crate removed from this list
 						it = cratePositions.erase(it);
 						crateDestroyed = true;
 						break;
@@ -653,18 +700,45 @@ void Game::DisplayHUD()
 	else 
 		fontProgram->SetUniform("vColour", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
-	m_pFtFont->Render(m_gameWindow.SCREEN_WIDTH - 240, height - 40, 20, "Crates Destroyed: %d", m_phero->cratesDestroyed);
+	m_pFtFont->Render(m_gameWindow.SCREEN_WIDTH - 240, height - 40, 20, "Score: %d", m_phero->score);
 	
 	m_pFtFont->Render(21, 40, 20, "Fireball Stack: %d", m_phero->currentShotsRemaining);
 	m_pFtFont->Render(20, 70, 40, "HEALTH: %d", m_phero->currentHealth);
-
-
 
 	// Frame rate
 	DisplayFrameRate();
 }
 
-void Game::Display3DText(glm::vec3 q, glutil::MatrixStack modelViewMatrixStack)
+void Game::DisplayEndGameText()
+{
+	CShaderProgram *fontProgram = (*m_pShaderPrograms)[1];
+
+	RECT dimensions = m_gameWindow.GetDimensions();
+	int height = dimensions.bottom - dimensions.top;
+
+
+	// Use the font shader program and render the text
+	fontProgram->UseProgram();
+	glDisable(GL_DEPTH_TEST);
+	fontProgram->SetUniform("matrices.modelViewMatrix", glm::mat4(1));
+	fontProgram->SetUniform("matrices.projMatrix", m_pcamera->GetOrthographicProjectionMatrix());
+
+	if (nightMode)
+		fontProgram->SetUniform("vColour", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	else
+		fontProgram->SetUniform("vColour", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
+	m_pFtFont->Render(m_gameWindow.SCREEN_WIDTH - 900, height - (height / 2), 150, state == WIN ? "SUCESS" : "FAILURE");
+	m_pFtFont->Render(m_gameWindow.SCREEN_WIDTH - 800, height - (height / 2) - 50, 50, "Final Score: %d", m_phero->score);
+
+	m_pFtFont->Render(21, 40, 20, "Fireball Stack: %d", m_phero->currentShotsRemaining);
+	m_pFtFont->Render(20, 70, 40, "HEALTH: %d", m_phero->currentHealth);
+
+	// Frame rate
+	DisplayFrameRate();
+}
+
+void Game::Display3DText(string text, int size, glm::vec3 q, glm::vec4 colour, glutil::MatrixStack modelViewMatrixStack)
 {
 	GLint viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport); 
@@ -677,8 +751,8 @@ void Game::Display3DText(glm::vec3 q, glutil::MatrixStack modelViewMatrixStack)
 		CShaderProgram*fontProgram = (*m_pShaderPrograms)[1]; 
 		fontProgram->UseProgram(); fontProgram->SetUniform("matrices.modelViewMatrix", glm::mat4(1)); 
 		fontProgram->SetUniform("matrices.projMatrix", m_pcamera->GetOrthographicProjectionMatrix()); 
-		fontProgram->SetUniform("vColour", glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)); 
-		m_pFtFont->Render(p.x, p.y, 100, "hi"); 
+		fontProgram->SetUniform("vColour", colour); 
+		m_pFtFont->Render(p.x, p.y, size, text.c_str()); 
 	}
 }
 
@@ -838,6 +912,116 @@ void Game::GameLoop()
 }
 
 
+void Game::SetTitleScreen()
+{
+	// Place Camera
+	glm::vec3 camPos = glm::vec3(0, 0, -50);
+	glm::vec3 camLook = glm::vec3(300, 60, -100);
+	m_pcamera->Set(camPos, camLook, glm::vec3(0, 1, 0));
+
+	// Title text placed
+	// glm::vec3 titlePos = camLook;
+
+}
+
+void Game::SetupLevel()
+{
+	perlin_t = 0.f;
+	// Spline work
+	m_t = 0.0f;
+	deltaTime = 0.0f;
+	// Enemy list
+	// enemyPositions;
+
+	// Clear all lists if there are any in them
+	// 
+	if (gemPositions.size() != 0)
+		gemPositions.clear();
+	if (cratePositions.size() != 0)
+		cratePositions.clear();
+	if (enemyPositions.size() != 0)
+		enemyPositions.clear();
+	if (explodingCratePositionTimes.size() != 0)
+		explodingCratePositionTimes.clear();
+	if (explodingEnemyPositionTimes.size() != 0)
+		explodingEnemyPositionTimes.clear();
+
+	if (enemiesAlive.size() != 0)
+	{
+		for (int i = 0; i < enemiesAlive.size(); i++)
+		{
+			delete enemiesAlive[i];
+		}
+	}
+
+	float angleIncrementer = pi / 4;
+	int size = m_catmull->getControlPoints().size();
+	for (int i = 0; i < size; i+=10)
+	{
+		for (float k = 0; k < 2 * pi; k += angleIncrementer)
+		{
+			float r = randfloat();
+
+			if (r < probOfObstacle)
+			{
+				float q = randfloat();
+				if (q > probOfCratevsEnemy)
+				{
+					// Spawn crate
+					cratePositions.push_back(Position());
+					m_catmull->SuperTNBMaker(cratePositions[cratePositions.size() - 1], k, (trackWidth / 2) + 4, i * 200);
+				}
+				else
+				{
+					// Spawn enemy
+					Position p;
+					m_catmull->SuperTNBMaker(p, k, (trackWidth / 2) + 4, i * 200);
+					enemiesAlive.push_back(new MovingObject(i * 200, k, p, -enemyMoveSpeed, 1000.f)); // Large arbitary value for curvetime, so enemies are always on curve
+
+					// enemyPositions.push_back(Position());
+					// m_catmull->SuperTNBMaker(enemyPositions[enemyPositions.size() - 1], k, (trackWidth / 2) + 4, i * 200);
+				}
+
+			}
+			else if(r < probOfGem)
+			{
+
+				// Spawn gem
+				gemPositions.push_back(Position());
+				m_catmull->SuperTNBMaker(gemPositions[gemPositions.size() - 1], k, (trackWidth / 2) + 4, i * 200);
+			}
+			// Otherwise leave empty
+
+		}
+	}
+
+	int d = 0;
+	d++;
+
+}
+
+void Game::StartGame()
+{
+	m_phero->Initialise();
+
+	state = GAMEPLAY;
+}
+
+void Game::OnLoseGame()
+{
+	// Blow up player 
+	finalCamPos =  m_pcamera->GetPosition();
+
+	state = LOSE;
+}
+
+void Game::OnWinGame()
+{
+	finalCamPos = m_pcamera->GetPosition();
+
+	state = WIN;
+}
+
 WPARAM Game::Execute() 
 {
 	m_pHighResolutionTimer = new CHighResolutionTimer;
@@ -921,7 +1105,7 @@ LRESULT Game::ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_p
 			break;
 		case VK_NUMPAD1:
 			m_phero->cameraSetting = m_phero->Freeview;
-			m_pcamera->Set(glm::vec3(0.f, 10.f, 0.f), glm::vec3(1.f, 10.f, 0.f), glm::vec3(0.f, 1.f, 0.f)); // Reset camera position
+			// m_pcamera->Set(glm::vec3(0.f, 10.f, 0.f), glm::vec3(1.f, 10.f, 0.f), glm::vec3(0.f, 1.f, 0.f)); // Reset camera position
 			break;
 		case VK_NUMPAD2:
 			m_phero->cameraSetting = m_phero->First;

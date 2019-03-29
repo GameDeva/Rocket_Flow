@@ -42,15 +42,10 @@ void CCatmullRom::SetControlPoints()
 	m_controlPoints.push_back(glm::vec3(-200, -300, -400));
 	m_controlPoints.push_back(glm::vec3(-400, -225, -290));
 	m_controlPoints.push_back(glm::vec3(-600, -150, -170));
+	m_controlPoints.push_back(glm::vec3(-450, -100, -100));
+	m_controlPoints.push_back(glm::vec3(-200, -50, -50));
 	m_controlPoints.push_back(glm::vec3(-100, -10, 0));
 	m_controlPoints.push_back(glm::vec3(300, 100, 100));
-	m_controlPoints.push_back(glm::vec3(600, 200, 200));
-	m_controlPoints.push_back(glm::vec3(800, 250, 301));
-	m_controlPoints.push_back(glm::vec3(900, 280, 400));
-	// m_controlPoints.push_back(glm::vec3(100, 5, 0)); m_controlPoints.push_back(glm::vec3(71, 5, 71)); m_controlPoints.push_back(glm::vec3(0, 5, 100)); m_controlPoints.push_back(glm::vec3(-71, 5, 71)); m_controlPoints.push_back(glm::vec3(-100, 5, 0)); m_controlPoints.push_back(glm::vec3(-71, 5, -71)); m_controlPoints.push_back(glm::vec3(0, 5, -100)); m_controlPoints.push_back(glm::vec3(71, 5, -71));
-
-
-	// Optionally, set upvectors (m_controlUpVectors, one for each control point as well)
 	
 }
 
@@ -171,7 +166,7 @@ void CCatmullRom::CreateCentreline()
 	SetControlPoints();
 
 	// Call UniformlySampleControlPoints with the number of samples required
-	UniformlySampleControlPoints(1000);
+	UniformlySampleControlPoints(trackSampleSize);
 
 	// Create a VAO called m_vaoCentreline and a VBO to get the points onto the graphics card
 	glGenVertexArrays(1, &m_vaoCentreline); 
@@ -513,7 +508,7 @@ void CCatmullRom::TNBAtSamplePoint(float samplePoint, Position &position)
 	glm::vec3 p, pNext, v;
 	Sample(samplePoint, p); // Point to move to
 	Sample(samplePoint + 1, pNext); // Point ahead to work out the T vector (for TNB frame)
-	Sample(samplePoint + 30, v); // Point camera should look at
+	// Sample(samplePoint + 30, v); // Point camera should look at
 
 	// TNB at centre
 	position._T = glm::normalize(pNext - p);

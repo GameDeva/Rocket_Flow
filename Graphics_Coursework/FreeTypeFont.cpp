@@ -165,7 +165,7 @@ void CFreeTypeFont::Print(string text, int x, int y, int pixelSize)
 
 
 // Print formatted text at the location (x, y) with specified pixel size (iPXSize)
-void CFreeTypeFont::Render(int x, int y, int pixelSize, char* text, ...)
+void CFreeTypeFont::Render(int x, int y, int pixelSize, const char* text, ...)
 {
 	char buf[512];
 	va_list ap;

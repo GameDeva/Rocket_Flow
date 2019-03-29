@@ -34,6 +34,8 @@ public:
 
 	void PerlinateOffsetPoints();
 
+	vector<glm::vec3>& getControlPoints() { return m_centrelinePoints; }
+
 private:
 
 	bool flipMode = false;

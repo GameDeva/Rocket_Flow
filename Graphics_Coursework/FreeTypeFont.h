@@ -22,7 +22,7 @@ public:
 	int GetTextWidth(string text, int pixelSize);
 
 	void Print(string text, int x, int y, int pixelSize = -1);
-	void Render(int x, int y, int pixelSize, char* text, ...);
+	void Render(int x, int y, int pixelSize, const char* text, ...);
 
 	
 	void ReleaseFont();
