@@ -53,6 +53,7 @@ Game::Game()
 	m_phero = NULL;
 	m_pcamera = NULL;
 	m_enemyShip - NULL;
+	m_pTree = NULL;
 
 	deltaTime = 0.0;
 	m_framesPerSecond = 0;
@@ -72,11 +73,12 @@ Game::~Game()
 	delete m_pAudio;
 	delete m_catmull;
 	delete m_pCube;
-	delete m_pSkullMesh;
+	delete m_pMill;
 	delete m_pGemTetra;
 	delete m_phero;
 	delete m_pcamera;
 	delete m_enemyShip;
+	delete m_pTree;
 
 	if (m_pShaderPrograms != NULL) {
 		for (unsigned int i = 0; i < m_pShaderPrograms->size(); i++)
@@ -105,11 +107,12 @@ void Game::Initialise()
 	m_pAudio = new CAudio;
 	m_catmull = new CCatmullRom(trackWidth);
 	m_pCube = new CCube;
-	m_pSkullMesh = new COpenAssetImportMesh;
+	m_pMill = new COpenAssetImportMesh;
 	m_pGemTetra = new CTetra;
 	m_phero = new Hero;
 	m_pcamera = new CCamera;
 	m_enemyShip = new COpenAssetImportMesh;
+	m_pTree = new COpenAssetImportMesh;
 	
 	RECT dimensions = m_gameWindow.GetDimensions();
 	// m_gameWindow.SetFullscreen();
@@ -183,18 +186,20 @@ void Game::Initialise()
 	m_pCube->Create("resources\\textures\\scifibox.jpg");
 
 	// Gem creation
-	m_pGemTetra->Create("resources\\textures\\redCrystal.jpg");
+	m_pGemTetra->Create("resources\\textures\\greenCrystal.jpg");
 
 	// Create the planar terrain
 	m_pPlanarTerrain->Create("resources\\textures\\", "Tile41a.jpg", 2000.0f, 2000.0f, 50.0f); // Texture downloaded from http://www.psionicgames.com/?page_id=26 on 24 Jan 2013
 
 	m_pFtFont->LoadSystemFont("consola.ttf", 128);
+	// 	m_pFtFont->LoadFont("resources\\fonts\\airstrike.ttf", 256);
 	m_pFtFont->SetShaderProgram(pFontProgram);
 
 	// Load some meshes in OBJ format
 	m_pBugShipMesh->Load("resources\\models\\orbiter bugship\\orbiter bugship.obj"); // Downloaded from turbosquid
-	m_pSkullMesh->Load("resources\\models\\Skull Low Poly\\Skull Low Poly.obj");// ^^
+	m_pMill->Load("resources\\models\\Mill\\low-poly-mill.obj");// ^^
 	m_enemyShip->Load("resources\\models\\Trident\\Trident-A10.obj");// ^^
+	m_pTree->Load("resources\\models\\Tree\\Lowpoly_tree_sample.obj"); // ^^
 
 	// Create a sphere
 	m_pSphere->Create("resources\\textures\\", "fireball.jpg", 25, 25);  // Texture downloaded from http://www.psionicgames.com/?page_id=26 on 24 Jan 2013
@@ -208,6 +213,13 @@ void Game::Initialise()
 	
 	// Create list of enemies
 	enemiesAlive = vector<MovingObject*>();
+
+	// Tree positions
+	for (int i = 0; i < 10; i++)
+	{
+		treePoints.push_back(glm::vec3(i * 80 + 50, i * 30 + (randfloat() * 20 - 50), i * 30 - 50));
+	}
+	
 
 	// After all the things are done, which don't need to be done on game restart
 	// Set up the level to start the game
@@ -366,6 +378,34 @@ void Game::Render()
 			++it;
 		}
 	}
+	
+	// Trees
+	for (int i = 0; i < treePoints.size(); i++)
+	{
+		modelViewMatrixStack.Push();
+		modelViewMatrixStack.Translate(treePoints[i]);
+		// modelViewMatrixStack *= gemPositions[i].getOrientation();
+		modelViewMatrixStack.Rotate(glm::vec3(1, 0, 0), i * 80);
+		// modelViewMatrixStack.Rotate(gemPositions[i]._T, m_t);
+		modelViewMatrixStack.Scale(treeRenderSize);
+		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+		pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+		m_pTree->Render();
+		modelViewMatrixStack.Pop();
+	}
+
+	// The mill
+	modelViewMatrixStack.Push();
+	modelViewMatrixStack.Translate(glm::vec3(-250, -200, -250));
+	// modelViewMatrixStack *= m_phero->position.getOrientation();
+	// modelViewMatrixStack.Rotate(glm::vec3(0, 1, 0), 180.f);
+	modelViewMatrixStack.Rotate(glm::vec3(0, 0, 1), 180.f);
+	modelViewMatrixStack.Rotate(glm::vec3(1, 0, 0), 180.f);
+	modelViewMatrixStack.Scale(100);
+	pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+	pMainProgram->SetUniform("matrices.normalMatrix", m_pcamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+	m_pMill->Render();
+	modelViewMatrixStack.Pop();
 
 	//  The space ship
 	if (m_phero->shouldRender)
@@ -488,8 +528,8 @@ void Game::Render()
 	// Render on start screen
 	if (state == START)
 	{
-		Game::Display3DText("Rocket Flow", 150, glm::vec3(300, 30, -300), nightMode ? nightTitleColour : titleColour, modelViewMatrixStack);
-		Game::Display3DText("Space to Begin!", 40, glm::vec3(300, 0, -290), nightMode ? nightTitleColour : titleColour, modelViewMatrixStack);
+		Game::Display3DText("Rocket Flow", 120, glm::vec3(450, 100, -100), nightMode ? nightTitleColour : titleColour, modelViewMatrixStack);
+		Game::Display3DText("Space to Begin!", 30, glm::vec3(350, 70, -100), nightMode ? nightTitleColour : titleColour, modelViewMatrixStack);
 	}
 	else {
 		// Draw the 2D graphics after the 3D graphics
@@ -516,47 +556,37 @@ void Game::Render()
 // Update method runs repeatedly with the Render method
 void Game::Update() 
 {
+	// Increase sample rate 
+	m_t += m_phero->moveSpeed * 0.001f* (float)deltaTime;
+	// titleMoveTimer = sin(deltaTime);
+	titleMoveTimer += titleMoveSpeed * 0.001f * (float)deltaTime;
+	MoveTitleCamera();
+	UpdateEnemyPositions();
+
 	switch (state)
 	{
 	case START:
+		SetTitleScreen();
 		// Set camera to single position
 		if (GetKeyState(VK_SPACE) & 0x80)
 		{
 			// Begin game
-			// SetupLevel();
 			StartGame();
 			m_phero->UpdateCamera(deltaTime, *m_pcamera);
 		}
 		break;
 	case GAMEPLAY:
-		// Increase sample rate 
-		m_t += m_phero->moveSpeed * 0.001f* (float)deltaTime;
-		UpdateEnemyPositions();
 		// If hero is alive
 		if (!m_phero->dead)
 		{
+			if (enemiesAlive.size() <= 0 && cratePositions.size() < 0)
+			{
+				OnWinGame();
+			}
+
 			// Update the hero
 			m_phero->Update(deltaTime, m_t, *m_catmull);
 			m_phero->UpdateCamera(deltaTime, *m_pcamera);
-
-			// Update exploding object timers
-			for (int i = 0; i < explodingCratePositionTimes.size(); i++)
-			{
-				explodingCratePositionTimes[i].second += explodeSpeed * 0.001f * (float)deltaTime;
-				if (explodingCratePositionTimes[i].second < maxExplodeTimer)
-				{
-					explodingCratePositionTimes.erase(explodingCratePositionTimes.begin() + i);
-				}
-			}
-			// Update exploding object timers
-			for (int i = 0; i < explodingEnemyPositionTimes.size(); i++)
-			{
-				explodingEnemyPositionTimes[i].second += explodeSpeed * 0.001f *  (float)deltaTime;
-				if (explodingEnemyPositionTimes[i].second < maxExplodeTimer)
-				{
-					explodingEnemyPositionTimes.erase(explodingEnemyPositionTimes.begin() + i);
-				}
-			}
 
 		}
 		else {
@@ -595,6 +625,25 @@ void Game::Update()
 		break;
 	}
 
+	// Update exploding object timers
+	for (int i = 0; i < explodingCratePositionTimes.size(); i++)
+	{
+		explodingCratePositionTimes[i].second += explodeSpeed * 0.001f * (float)deltaTime;
+		if (explodingCratePositionTimes[i].second < maxExplodeTimer)
+		{
+			explodingCratePositionTimes.erase(explodingCratePositionTimes.begin() + i);
+		}
+	}
+	// Update exploding object timers
+	for (int i = 0; i < explodingEnemyPositionTimes.size(); i++)
+	{
+		explodingEnemyPositionTimes[i].second += explodeSpeed * 0.001f *  (float)deltaTime;
+		if (explodingEnemyPositionTimes[i].second < maxExplodeTimer)
+		{
+			explodingEnemyPositionTimes.erase(explodingEnemyPositionTimes.begin() + i);
+		}
+	}
+
 	currentNightToggleTimer += (float)deltaTime * 0.001;
 	// Night mode toggle
 	if (GetKeyState(VK_NUMPAD7) & 0x80 && currentNightToggleTimer > timeBetweenNightToggle)
@@ -604,6 +653,12 @@ void Game::Update()
 	}
 
 	m_pAudio->Update();
+}
+
+void Game::MoveTitleCamera()
+{
+	currentCamTitlePosition = glm::mix(titleCamPosition1, titleCamPosition2, sin(titleMoveTimer));
+
 }
 
 void Game::UpdateEnemyPositions()
@@ -650,7 +705,7 @@ void Game::CheckForCollisions()
 				{
 					if (glm::distance((*ft)->_position._point, (*it)._point) < 8.f)
 					{
-						m_phero->OnCrateDestroy();
+						m_phero->OnPointScore(cratePoint);
 						// Destroyed crate is added to list of exploding crate
 						explodingCratePositionTimes.push_back(pair<Position, float>(*it, 0.f));
 						// Crate removed from this list
@@ -666,12 +721,55 @@ void Game::CheckForCollisions()
 		}
 	}
 
+	// Enemy Collisions
+	for (vector<MovingObject*>::iterator it = enemiesAlive.begin(); it != enemiesAlive.end();)
+	{
+		bool enemyDestroyed = false;
+
+		// Check for collision with hero
+		if (glm::distance((*it)->_position._point, heroPoint) < 5.f)
+		{
+			// Hero takes damage 
+			m_phero->OnTakeDamage(crateDamageValue);
+			// Destroyed crate is added to list of exploding crate
+			explodingCratePositionTimes.push_back(pair<Position, float>((*it)->_position, 0.f));
+			// Crate removed from this list
+			it = enemiesAlive.erase(it);
+
+			enemyDestroyed = true;
+		}
+		else {
+			// Check for collision with each fireball alive
+			vector<MovingObject*> shotsAliveList = m_phero->getShotsAliveList();
+			if (shotsAliveList.size() != 0)
+			{
+				for (vector<MovingObject*>::iterator ft = shotsAliveList.begin(); ft != shotsAliveList.end();)
+				{
+					if (glm::distance((*ft)->_position._point, (*it)->_position._point) < 8.f)
+					{
+						m_phero->OnPointScore(enemyPoint);
+						// Destroyed crate is added to list of exploding crate
+						explodingCratePositionTimes.push_back(pair<Position, float>((*it)->_position, 0.f));
+						// Crate removed from this list
+						it = enemiesAlive.erase(it);
+						enemyDestroyed = true;
+						break;
+					}
+					++ft;
+				}
+			}
+			if (!enemyDestroyed)
+				++it;
+		}
+	}
+
+
 	// Gem collisions
 	for (vector<Position>::iterator it = gemPositions.begin(); it != gemPositions.end();)
 	{
 		if (glm::distance((*it)._point, heroPoint) < 5.f)
 		{
-			m_phero->OnGemCollect();
+			m_phero->OnPointScore(gemPoint);
 			it = gemPositions.erase(it);
 		}
 		else {
@@ -729,7 +827,7 @@ void Game::DisplayEndGameText()
 		fontProgram->SetUniform("vColour", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	m_pFtFont->Render(m_gameWindow.SCREEN_WIDTH - 900, height - (height / 2), 150, state == WIN ? "SUCESS" : "FAILURE");
-	m_pFtFont->Render(m_gameWindow.SCREEN_WIDTH - 800, height - (height / 2) - 50, 50, "Final Score: %d", m_phero->score);
+	m_pFtFont->Render(m_gameWindow.SCREEN_WIDTH - 850, height - (height / 2) - 50, 50, "Final Score: %d", m_phero->score);
 
 	m_pFtFont->Render(21, 40, 20, "Fireball Stack: %d", m_phero->currentShotsRemaining);
 	m_pFtFont->Render(20, 70, 40, "HEALTH: %d", m_phero->currentHealth);
@@ -752,8 +850,11 @@ void Game::Display3DText(string text, int size, glm::vec3 q, glm::vec4 colour, g
 		fontProgram->UseProgram(); fontProgram->SetUniform("matrices.modelViewMatrix", glm::mat4(1)); 
 		fontProgram->SetUniform("matrices.projMatrix", m_pcamera->GetOrthographicProjectionMatrix()); 
 		fontProgram->SetUniform("vColour", colour); 
-		m_pFtFont->Render(p.x, p.y, size, text.c_str()); 
+		m_pFtFont->Render(p.x, p.y, size, text.c_str());
+		//fontProgram->SetUniform("vColour", glm::vec4(1, 0, 0, 1));
+		//m_pFtFont->Render(p.x+3, p.y+3, size, text.c_str());
 	}
+
 }
 
 void Game::DisplayFrameRate()
@@ -915,12 +1016,9 @@ void Game::GameLoop()
 void Game::SetTitleScreen()
 {
 	// Place Camera
-	glm::vec3 camPos = glm::vec3(0, 0, -50);
-	glm::vec3 camLook = glm::vec3(300, 60, -100);
-	m_pcamera->Set(camPos, camLook, glm::vec3(0, 1, 0));
-
-	// Title text placed
-	// glm::vec3 titlePos = camLook;
+	// glm::vec3 camPos = glm::vec3(0, 0, -50);
+	glm::vec3 camLook = titlePosition;
+	m_pcamera->Set(currentCamTitlePosition, camLook, glm::vec3(0, 1, 0));
 
 }
 
@@ -1105,7 +1203,7 @@ LRESULT Game::ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_p
 			break;
 		case VK_NUMPAD1:
 			m_phero->cameraSetting = m_phero->Freeview;
-			// m_pcamera->Set(glm::vec3(0.f, 10.f, 0.f), glm::vec3(1.f, 10.f, 0.f), glm::vec3(0.f, 1.f, 0.f)); // Reset camera position
+			m_pcamera->Set(glm::vec3(0.f, 10.f, 0.f), glm::vec3(1.f, 10.f, 0.f), glm::vec3(0.f, 1.f, 0.f)); // Reset camera position
 			break;
 		case VK_NUMPAD2:
 			m_phero->cameraSetting = m_phero->First;

@@ -78,7 +78,6 @@ struct LightInfo
 		_cutoff = cutoff;
 	}
 
-
 };
 
 enum GameState { START, GAMEPLAY, WIN, LOSE };

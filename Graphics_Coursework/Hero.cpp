@@ -51,6 +51,7 @@ Hero::~Hero()
 // Initialise hero object
 void Hero::Initialise()
 {
+	cameraSetting = Third;
 	dead = false;
 	rotationAngle = 0.f;
 	discard.Start();
@@ -129,27 +130,22 @@ void Hero::UpdateCamera(float deltaTime, CCamera &camera)
 	case First:
 		// First Person View
 		camera.Set(position._point + position._B + position._T * 5.5f, position._point + position._B + position._T * 10.f, position._B);
-		// UpdateCameraPosition(playpos, playpos + T * 10.f, v);
 		break;
 	case Third:
 		// Third Person View
 		camera.Set(position._point + 30.f  * position._B - 50.f * position._T, position._point + position._T * 10.f, position._B);
-		// UpdateCameraPosition(playpos + 10.f  * B - 30.f * T, playpos + T * 10.f, playpos);
 		break;
 	case Top:
 		// Top View
 		camera.Set(position._point + 70.f  * position._B, position._point + position._T * 1.f, position._B);
-		// UpdateCameraPosition(p + 20.f  * B, pNext, p + 0.1f * T);
 		break;
 	case SideLeft:
 		// Side View
 		camera.Set(position._point + 30.f  * position._B + 70.f *position._N, position._point + position._T * 1.f, position._B);
-		// UpdateCameraPosition(p + 20.f  * B, pNext, p + 0.1f * T);
 		break;
 	case SideRight:
 		// Side View
 		camera.Set(position._point + 30.f  * position._B - 70.f * position._N, position._point + position._T * 1.f, position._B);
-		// UpdateCameraPosition(p + 20.f  * B, pNext, p + 0.1f * T);
 		break;
 	}
 }
@@ -259,15 +255,9 @@ void Hero::UpdateSpotLights(float m_t, CCatmullRom &catmul)
 	}
 }
 
-void Hero::OnCrateDestroy()
+void Hero::OnPointScore(int value)
 {
-	score++;
-}
-
-void Hero::OnGemCollect()
-{
-
-
+	score+= value;
 }
 
 void Hero::OnTakeDamage(int damageValue)
@@ -275,9 +265,12 @@ void Hero::OnTakeDamage(int damageValue)
 	// Take damage if not invulnerable
 	if (!invulnerable)
 	{
-		currentHealth -= 50;
+		currentHealth -= damageValue;
 		if (currentHealth <= 0)
+		{
 			dead = true;
+			shouldRender = false;
+		}
 		invulnerable = true;
 	}
 }

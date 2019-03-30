@@ -31,8 +31,6 @@ class Game {
 private:
 	GameState state;
 
-	// const float pi = 3.14159f;
-	// Three main methods used in the game.  Initialise runs once, while Update and Render run repeatedly in the game loop.
 	void Initialise();
 	void CheckForCollisions();
 	void Update();
@@ -52,8 +50,9 @@ private:
 	CPlane *m_pPlanarTerrain;
 	CFreeTypeFont *m_pFtFont;
 	COpenAssetImportMesh *m_pBugShipMesh;
-	COpenAssetImportMesh *m_pSkullMesh;
+	COpenAssetImportMesh *m_pMill;
 	COpenAssetImportMesh *m_enemyShip;
+	COpenAssetImportMesh *m_pTree;
 	CSphere *m_pSphere;
 	CHighResolutionTimer *m_pHighResolutionTimer;
 	CAudio *m_pAudio;
@@ -107,12 +106,25 @@ private:
 	const int trackSampleSize = 300;
 
 	const int crateDamageValue = 10;
-	const int skullDamageValue = 20;
-	
+	const int enemyDamageValue = 20;
+
+	const int gemPoint = 100;
+	const int cratePoint = 250;
+	const int enemyPoint = 500;
+
+	const float titleMoveSpeed = 0.7f;
+	float titleMoveTimer;
+	glm::vec3 titleCamPosition1 = glm::vec3(500, 30, -500);
+	glm::vec3 titleCamPosition2 = glm::vec3(250, 0, -250);
+	glm::vec3 currentCamTitlePosition;
+	glm::vec3 titlePosition = glm::vec3(300, 60, -100);
+	void MoveTitleCamera();
+
 	// Time taken to explode an object
 	const float maxExplodeTimer = 4.f;
 	const float explodeSpeed = 300.f;
 
+	vector<glm::vec3> treePoints;
 	vector<Position> enemyPositions;
 	vector<Position> cratePositions;
 	vector<Position> gemPositions;
@@ -144,5 +156,6 @@ private:
 	const float heroShipRenderSize = .02f;
 	const float fireBallRenderSize = 2.f;
 	const float enemyRenderSize = 0.005f;
+	const float treeRenderSize = 1.f;
 
 };

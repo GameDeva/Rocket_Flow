@@ -28,8 +28,7 @@ public:
 
 	bool dead;
 	void OnTakeDamage(int damageValue);
-	void OnCrateDestroy();
-	void OnGemCollect();
+	void OnPointScore(int value);
 
 	const float moveSpeed = 150.f;
 
@@ -38,7 +37,7 @@ public:
 
 	bool shouldRender;
 
-	const int maxNumberOfShots = 30;
+	const int maxNumberOfShots = 99;
 	int currentShotsRemaining;
 
 	// Camera Related
